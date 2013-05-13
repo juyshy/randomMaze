@@ -13,9 +13,9 @@ var Site = { // object to represent lattice site
         + " Enter number of steps in walk: ");
     var n_steps, n_walks;
  
-    n_steps = prompt("Enter number of steps in walk","");
+    n_steps = Number(prompt("Enter number of steps in walk",""));
     console.log( " Enter number of walks to generate: ");
-	n_walks = prompt("Enter number of walks to generate:","");
+	n_walks = Number(prompt("Enter number of walks to generate:",""));
  
 
     var walks = 0;
@@ -35,16 +35,16 @@ var Site = { // object to represent lattice site
         // loop over desired number of steps
         for (var step = 0; step < n_steps; step++) {
             // take a random step
-            var d = std_rand();
-             console.log( " std_rand = " + d
-                );
+			 console.log( " step = " + step  );
+            var d = Math.random();
+            // console.log( " std_rand = " + d  );
             if (d < 0.25) ++s.x; // step East
             else if (d < 0.50) ++s.y; // step North
             else if (d < 0.75) --s.x; // step West
             else --s.y; // step South
             // check whether the site is occupied
             var occupied = false;
-            for (var i = 0; i < sites.size(); i++) {
+            for (var i = 0; i < sites.length; i++) {
                 if (s.x == sites[i].x && s.y == sites[i].y) {
                     occupied = true;
                     break;
@@ -73,7 +73,7 @@ var Site = { // object to represent lattice site
 
     r2av /= n_walks;
     r4av /= n_walks;
-    var stdDev = sqrt(r4av - r2av * r2av);
+    var stdDev = Math.sqrt(r4av - r2av * r2av);
     var totalWalks = n_walks + failed_walks;
     var failedPercent = failed_walks / totalWalks * 100.0;
     console.log( " Mean square distance <r^2> = " + r2av + "\n"
