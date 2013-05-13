@@ -1,52 +1,50 @@
 
-inline double std_rand()
-{
-    return rand() / (RAND_MAX + 1.0);
-}
+<script>
+ // http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
 
-struct Site { // object to represent lattice site
-    int x; // x coordinate
-    int y; // y coordinate
+var Site = { // object to represent lattice site
+     x:0, // x coordinate
+     y:0  // y coordinate
 };
 
-int main() {
+ 
+    console.log( " Self-Avoiding Walks on a Square Lattice\n"
+        + " ---------------------------------------\n"
+        + " Enter number of steps in walk: ");
+    var n_steps, n_walks;
+ 
+    n_steps = prompt("Enter number of steps in walk","");
+    console.log( " Enter number of walks to generate: ");
+	n_walks = prompt("Enter number of walks to generate:","");
+ 
 
-    cout << " Self-Avoiding Walks on a Square Lattice\n"
-        << " ---------------------------------------\n"
-        << " Enter number of steps in walk: ";
-    int n_steps, n_walks;
-
-    cin >> n_steps;
-    cout << " Enter number of walks to generate: ";
-    cin >> n_walks;
-
-    int walks = 0;
-    int failed_walks = 0;
-    double r2av = 0;
-    double r4av = 0;
+    var walks = 0;
+    var failed_walks = 0;
+    var r2av = 0;
+    var r4av = 0;
 
     // generate walks
 
     while (walks < n_walks) {
-        vector<Site> sites; // set of occupied lattice sites
-        Site s;
+        var sites = []; // set of occupied lattice sites
+        var s ={};
         s.x = 0;
         s.y = 0;
-        sites.push_back(s);
-        bool walk_failed = false;
+        sites.push(s);
+        var walk_failed = false;
         // loop over desired number of steps
-        for (int step = 0; step < n_steps; step++) {
+        for (var step = 0; step < n_steps; step++) {
             // take a random step
-            double d = std_rand();
-             cout << " std_rand = " << d
-                << endl;
+            var d = std_rand();
+             console.log( " std_rand = " + d
+                );
             if (d < 0.25) ++s.x; // step East
             else if (d < 0.50) ++s.y; // step North
             else if (d < 0.75) --s.x; // step West
             else --s.y; // step South
             // check whether the site is occupied
-            bool occupied = false;
-            for (int i = 0; i < sites.size(); i++) {
+            var occupied = false;
+            for (var i = 0; i < sites.size(); i++) {
                 if (s.x == sites[i].x && s.y == sites[i].y) {
                     occupied = true;
                     break;
@@ -56,32 +54,33 @@ int main() {
             walk_failed = true;
             break;
             }
-            sites.push_back(s);
+            sites.push(s);
         }
         if (walk_failed) {
             ++failed_walks;
             continue;
         }
-        double r2 = s.x * s.x + s.y * s.y;
+        var r2 = s.x * s.x + s.y * s.y;
         r2av += r2;
         r4av += r2 * r2;
         ++walks;
-            cout << "sites: ";
-    for (int i = 0; i < sites.size(); i++) {
-            cout << "\n sites[" << i << "].x " << sites[i].x ;
-            cout << "\n sites[" << i << "].y " << sites[i].y << endl;
+            console.log( "sites: ");
+    for (var i = 0; i < sites.size(); i++) {
+            console.log( "\n sites[" + i + "].x " + sites[i].x );
+            console.log( "\n sites[" + i + "].y " + sites[i].y );
     }
     }
 
     r2av /= n_walks;
     r4av /= n_walks;
-    double stdDev = sqrt(r4av - r2av * r2av);
-    double totalWalks = n_walks + failed_walks;
-    double failedPercent = failed_walks / totalWalks * 100.0;
-    cout << " Mean square distance <r^2> = " << r2av << "\n"
-        << " Standard deviation = " << stdDev << "\n"
-        << " Percentage failed walks = " << failedPercent
-        << endl;
+    var stdDev = sqrt(r4av - r2av * r2av);
+    var totalWalks = n_walks + failed_walks;
+    var failedPercent = failed_walks / totalWalks * 100.0;
+    console.log( " Mean square distance <r^2> = " + r2av + "\n"
+        + " Standard deviation = " + stdDev + "\n"
+        + " Percentage failed walks = " + failedPercent
+        );
 
+ 
 
-}
+</script>
