@@ -40,12 +40,12 @@ var startY = 0;
 		 context = canvas.getContext("2d");
 		
 		// s‰‰det‰‰n viivan leveys:
-		
- 
+
 		context.strokeStyle = "#8badb8";
 		context.lineWidth = 1;
 
 		//context.beginPath();
+		// ruudukko
  		for (var i = 0; i< 20; ++i) {
 			context.moveTo(0, i*20); 
 			context.lineTo(400, i*20);
@@ -178,8 +178,8 @@ var startY = 0;
 
 			context.lineTo(startX+ sites[i].x * 20 , startY+ sites[i].y * 20);
 			context.stroke();
-    } 
-		context.closePath();
+			} 
+			context.closePath();
 
     }
 
