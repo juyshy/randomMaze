@@ -7,6 +7,8 @@ width: 600px;
 }
 </style>
 
+<script src="colorkeywords2.js"></script>
+
 <script>
  
  /*
@@ -25,7 +27,7 @@ width: 600px;
  
  */
  
-var dimesiot = 21;
+var dimesiot = 19;
  
 var n_steps = (dimesiot+1)*(dimesiot+1)-10;
 var boudaries = {xLeft:0, xRight:dimesiot, yTop:0, yBottom:dimesiot};
@@ -37,6 +39,13 @@ var vapaat = [] ;
  var context ;
  var context2;
 
+ 		var vareja = [];
+		for (var prop in ColorKeywords) {
+/* 			console.log(ColorKeywords[prop]); // prints out the property name */
+			vareja.push(ColorKeywords[prop])
+		}
+		//console.log("vareja.length " + vareja.length);
+ 
  function teeRuudukko() {
  		context.strokeStyle = "#8badb8";
 		// s‰‰det‰‰n viivan leveys:
@@ -253,8 +262,8 @@ function drawSaw(context) {
 		
 		kaikkisites = kaikkisites.concat(alkupiste);
 		kaikkisites = kaikkisites.concat(sites);
-		context.strokeStyle = "#121212";
-		context.lineWidth = 3;
+		context.strokeStyle = "#aaaaaa";
+		context.lineWidth = 2;
 		drawSawPath(alkupiste.x, alkupiste.y, sites, context);//,  "#050002",4);
 		
 		alkupiste = haarautumanAlku(vapaat, kaikkisites);
@@ -271,9 +280,11 @@ function drawSaw(context) {
 		} */
 	
 	}
-		context2.strokeStyle = "#121212";
+		context2.strokeStyle =  "#00CED1";// "#121212";
 		context2.lineWidth = 3;
 		for (var i = 0; i < paths.length; i++) {
+			context2.strokeStyle = vareja[i+10];
+			//console.log("vareja[i] " + vareja[i]);
 			drawSawPath(paths[i][0].x, paths[i][0].y, paths[i], context2);//, 
 		}
 		
@@ -283,8 +294,8 @@ function drawSaw(context) {
 			
 			var pisteitaloytyi = 0;
 		/* 	var pistetiedot= haeSubPath(piste1); */
-			for (var i = 0; i < paths.length; i++) {
-					var subpath = paths[i];
+			for (var j = 0; j < paths.length; j++) {
+					var subpath = paths[j];
 					 pisteitaloytyi = 0;
 					for (var i = 0; i < subpath.length; i++) {
 							if ( i < subpath.length-1 && (piste1.x == subpath[i].x && piste1.y == subpath[i].y) && (piste2.x == subpath[i+1].x && piste2.y == subpath[i+1].y) ) {
@@ -308,53 +319,59 @@ function drawSaw(context) {
 	
 		}
 		
+	function viivaValilla2(piste1,piste2){
+	
+			console.log(piste1.x + "," + piste1.y +"  "+  piste2.x + "," + piste2.y );
+			
+			for (var j = 0; j < paths.length; j++) {
+					var subpath = paths[j];
+					 //var pisteitaloytyi = 0;
+					for (var i = 0; i < subpath.length; i++) {
+							if (  piste1.x == subpath[i].x && piste1.y == subpath[i].y) {
+								console.log("subpath " + j);
+							}
+					
+					}
+				}
+		return true;
+	}
 		
 	console.log("pathslength " + paths.length );
-/* 	var rivi = 0;
-	var i = 0;
-	for (var i=0; i< dimesiot; i++) {
-		
-		context.strokeStyle = "#8badb8";
-		// s‰‰det‰‰n viivan leveys:
-		context.lineWidth = 2;
-		var offset = gridDim / 2;
-		var piste1 = {x:i, y:rivi};
-		var piste2 = {x:i, y:rivi+1};
-		console.log("i " + i);
-		if ( !viivaValilla(piste1,piste2)) {
 
-		
-			context.moveTo(i*gridDim-offset, rivi+offset); 
-			context.lineTo(i*gridDim+offset,rivi+offset);
-			context.stroke();
+	context.lineWidth = 4;
+	var offset = gridDim / 2;
+	context.strokeStyle = "#121212";
 	
+	for (var rivi=0; rivi< dimesiot; rivi++) {
+		for (var  i=0; i< dimesiot; i++) {
+		
+			var piste1 = {x:i, y:rivi};
+			var piste2 = {x:i, y:rivi+1};
+			//console.log("i " + i);
+			if ( !viivaValilla(piste1,piste2)) {
+
+				context.moveTo(i*gridDim-offset, rivi*gridDim+offset); 
+				context.lineTo(i*gridDim+offset,rivi*gridDim+offset);
+				context.stroke();
+		
+			}
+			
+			var piste1 = {x:rivi, y:i};
+			var piste2 = {x:rivi+1, y:i};
+			//console.log("i " + i);
+			if ( !viivaValilla(piste1,piste2)) {
+
+				context.moveTo( rivi*gridDim+offset , i*gridDim-offset); 
+				context.lineTo(rivi*gridDim+offset, i*gridDim+offset);
+				context.stroke();
+		
+			}
+			
 		}
-	}
-		 */
+	}	 
 		
  }
- //console.log("kaikkisites "  + kaikkisites);
-/*  
- 		for(var i= 0; i< kaikkisites.length; i++) { // "x, y " ", " +
-			  console.log( (String(kaikkisites[i].x).length == 2 ? kaikkisites[i].x : "0" +kaikkisites[i].x) + "" +  (String(kaikkisites[i].y).length == 2 ? kaikkisites[i].y : "0" +kaikkisites[i].y)); 
-			  }*/
-			  
-			  //console.log(   kaikkisites[i].x   + "," +   kaikkisites[i].y  );
-			   // document.write("x, y " + kaikkisites[i].x + ", " + kaikkisites[i].y + "<br>" );
-			// console.log("kaikkisites[i].y " + kaikkisites[i].y);
-
-			
- 
-/* 	console.log("vapaat.length " + vapaat.length);
-	console.dir( vapaat); */
-/*   	var sites2= stepPoints(alkupiste);
- 	context.strokeStyle = "#121212";
-	context.lineWidth = 3;
-	drawSawPath(alkupiste.x, alkupiste.y, sites2);//,   "#050002",4);   */
-/* 	} */
-
-//}
- 
+  
  
  window.onload = function(){
 		// haetaan muuttujaan viite DOM canvas elementtiin id:n perusteella
@@ -364,8 +381,11 @@ function drawSaw(context) {
 		// luodaan 2d piirtokonteksti canvas objektin getContext() methodilla
 		context = canvas.getContext("2d");	
 		context2 = canvas2.getContext("2d");	
-		teeRuudukko();
-		drawSaw(context);
+  		teeRuudukko();
+		drawSaw(context); 
+		
+
+		
 	};
  
  // http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
