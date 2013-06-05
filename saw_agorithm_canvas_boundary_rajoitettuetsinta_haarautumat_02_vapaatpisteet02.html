@@ -27,7 +27,7 @@ width: 600px;
  
 var dimesiot = 21;
  
-var n_steps = (dimesiot+1)*(dimesiot+1)-100;
+var n_steps = (dimesiot+1)*(dimesiot+1)-10;
 var boudaries = {xLeft:0, xRight:dimesiot, yTop:0, yBottom:dimesiot};
 var startX = 0;
 var startY = 0;	
@@ -35,6 +35,7 @@ var gridDim = 20;
 var vapaat = [] ;
  
  var context ;
+ var context2;
 
  function teeRuudukko() {
  		context.strokeStyle = "#8badb8";
@@ -82,6 +83,7 @@ var vapaat = [] ;
   }
  
  
+ 
    function poistaVapaista(piste) {
 		for (var i = 0; i< vapaat.length; ++i) {
 			if (piste.x == vapaat[i].x && piste.y == vapaat[i].y) {
@@ -93,7 +95,7 @@ var vapaat = [] ;
  
  function onVapaa(x, y, vapaat) {
 				var  valid = false;
-				// tarkastetaan on ko uusi satunnainen piste jo varattu
+				// tarkastetaan onko uusi satunnainen piste jo varattu
 				
 				for (var i = 0; i < vapaat.length; i++) {
 
@@ -134,7 +136,7 @@ var vapaat = [] ;
 	 
  } */
  
- function drawSawPath(startX, startY, sites) {
+ function drawSawPath(startX, startY, sites, context) {
  
 	context.beginPath();
 	context.moveTo(startX*gridDim, startY*gridDim);
@@ -216,10 +218,10 @@ function drawSaw(context) {
 	
 	function haarautumanAlku(vapaat, sites) {
 	
-	var valmiitHaarautumaan= kaikkiReitillaJoillaVapaaVieressa(vapaat, sites);
-	//piirraPisteet(valmiitHaarautumaan);
-	var randindx = Math.floor(Math.random() * valmiitHaarautumaan.length);
-	return valmiitHaarautumaan[randindx];
+		var valmiitHaarautumaan= kaikkiReitillaJoillaVapaaVieressa(vapaat, sites);
+		//piirraPisteet(valmiitHaarautumaan);
+		var randindx = Math.floor(Math.random() * valmiitHaarautumaan.length);
+		return valmiitHaarautumaan[randindx];
 	}
 	
 	function onListassa(alkupiste,haarautumaPisteet) {
@@ -238,28 +240,111 @@ function drawSaw(context) {
 	alkupiste.y = startY;
 	var kaikkisites = [];
  	var haarautumaPisteet = [];
-	while (vapaat.length > 0 && alkupiste != null) {  
-	//for (var i=0; i < 5; i++){
-	//console.log("i " + i);
-	var sites = stepPoints(alkupiste);
-	kaikkisites = kaikkisites.concat(sites);
-	context.strokeStyle = "#121212";
-	context.lineWidth = 3;
-	drawSawPath(alkupiste.x, alkupiste.y, sites);//,  "#050002",4);
+	var paths = [];
 	
-	alkupiste = haarautumanAlku(vapaat, kaikkisites);
-	if (alkupiste != null) {
-		while (onListassa(alkupiste,haarautumaPisteet)) {
+	while (vapaat.length > 0 && alkupiste != null) {  
+		//for (var i=0; i < 5; i++){
+		//console.log("i " + i);
+		var sites = stepPoints(alkupiste);
+		var subpath = [];
+		subpath.push(alkupiste);
+		subpath=subpath.concat(sites);
+		paths.push(subpath);
+		
+		kaikkisites = kaikkisites.concat(alkupiste);
+		kaikkisites = kaikkisites.concat(sites);
+		context.strokeStyle = "#121212";
+		context.lineWidth = 3;
+		drawSawPath(alkupiste.x, alkupiste.y, sites, context);//,  "#050002",4);
+		
 		alkupiste = haarautumanAlku(vapaat, kaikkisites);
+		if (alkupiste != null) {
+			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteitä kunnes löydetään uusi haarautumapiste 
+				alkupiste = haarautumanAlku(vapaat, kaikkisites);
+			}
+			piirraPallo( alkupiste.x , alkupiste.y ,"#dd3390",5) ;
+		}
+		haarautumaPisteet.push(alkupiste);
+/* 		if (alkupiste != null) {
+		console.log("alkupiste " + alkupiste.x + " " + alkupiste.y);
+		
+		} */
+	
+	}
+		context2.strokeStyle = "#121212";
+		context2.lineWidth = 3;
+		for (var i = 0; i < paths.length; i++) {
+			drawSawPath(paths[i][0].x, paths[i][0].y, paths[i], context2);//, 
+		}
+		
+		
+	 
+		function viivaValilla(piste1,piste2){
+			
+			var pisteitaloytyi = 0;
+		/* 	var pistetiedot= haeSubPath(piste1); */
+			for (var i = 0; i < paths.length; i++) {
+					var subpath = paths[i];
+					 pisteitaloytyi = 0;
+					for (var i = 0; i < subpath.length; i++) {
+							if ( i < subpath.length-1 && (piste1.x == subpath[i].x && piste1.y == subpath[i].y) && (piste2.x == subpath[i+1].x && piste2.y == subpath[i+1].y) ) {
+								return true;
+								break;
+								pisteitaloytyi +=1; 
+								
+							}
+							if ( i > 0 && (piste1.x == subpath[i].x && piste1.y == subpath[i].y) && (piste2.x == subpath[i-1].x && piste2.y == subpath[i-1].y) )  {
+							return true;
+							break;
+								pisteitaloytyi +=1; 
+							}
+					}
+					console.log("pisteitaloytyi " + pisteitaloytyi);
+					//if  (pisteitaloytyi > 0) return true;
+				}
+				
+			//console.dir("pistetiedot " + pistetiedot.subpindx +" " +  pistetiedot.pindx);
+		return false;
+	
+		}
+		
+		
+	console.log("pathslength " + paths.length );
+/* 	var rivi = 0;
+	var i = 0;
+	for (var i=0; i< dimesiot; i++) {
+		
+		context.strokeStyle = "#8badb8";
+		// säädetään viivan leveys:
+		context.lineWidth = 2;
+		var offset = gridDim / 2;
+		var piste1 = {x:i, y:rivi};
+		var piste2 = {x:i, y:rivi+1};
+		console.log("i " + i);
+		if ( !viivaValilla(piste1,piste2)) {
+
+		
+			context.moveTo(i*gridDim-offset, rivi+offset); 
+			context.lineTo(i*gridDim+offset,rivi+offset);
+			context.stroke();
+	
 		}
 	}
-	haarautumaPisteet.push(alkupiste);
-	//if (alkupiste != null) {
-	//console.log("alkupiste " + alkupiste.x + " " + alkupiste.y);
-	//piirraPallo( alkupiste.x , alkupiste.y ,"#ff3300",5) 
-	//}
-	
+		 */
+		
  }
+ //console.log("kaikkisites "  + kaikkisites);
+/*  
+ 		for(var i= 0; i< kaikkisites.length; i++) { // "x, y " ", " +
+			  console.log( (String(kaikkisites[i].x).length == 2 ? kaikkisites[i].x : "0" +kaikkisites[i].x) + "" +  (String(kaikkisites[i].y).length == 2 ? kaikkisites[i].y : "0" +kaikkisites[i].y)); 
+			  }*/
+			  
+			  //console.log(   kaikkisites[i].x   + "," +   kaikkisites[i].y  );
+			   // document.write("x, y " + kaikkisites[i].x + ", " + kaikkisites[i].y + "<br>" );
+			// console.log("kaikkisites[i].y " + kaikkisites[i].y);
+
+			
+ 
 /* 	console.log("vapaat.length " + vapaat.length);
 	console.dir( vapaat); */
 /*   	var sites2= stepPoints(alkupiste);
@@ -268,14 +353,17 @@ function drawSaw(context) {
 	drawSawPath(alkupiste.x, alkupiste.y, sites2);//,   "#050002",4);   */
 /* 	} */
 
-}
+//}
  
  
  window.onload = function(){
 		// haetaan muuttujaan viite DOM canvas elementtiin id:n perusteella
 		var canvas = document.getElementById("canvakseniMun");
+		var canvas2 = document.getElementById("canvakseniMun2");
+		
 		// luodaan 2d piirtokonteksti canvas objektin getContext() methodilla
 		context = canvas.getContext("2d");	
+		context2 = canvas2.getContext("2d");	
 		teeRuudukko();
 		drawSaw(context);
 	};
@@ -288,6 +376,10 @@ function drawSaw(context) {
 <div id="wrap">
 	<canvas id="canvakseniMun" width="400" height="400" style="border:1px solid black;">
 	</canvas>
+	<br><br>
+		<canvas id="canvakseniMun2" width="400" height="400" style="border:1px solid black;">
+	</canvas>
 	</div>
+
 </body>
 </html>
