@@ -35,7 +35,7 @@ var n_steps = (dimesiot+1)*(dimesiot+1)-10;
 var boudaries = {xLeft:0, xRight:dimesiot, yTop:0, yBottom:dimesiot};
 var startX = 0;
 var startY = 0;	
-var gridDim = 28;
+var gridDim = 20;
 var vapaat = [] ;
  
  //var context ;
@@ -284,12 +284,16 @@ function piirraSokkelo() {
 			}
 			
 		}	 
-		 this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces );
+		
+		//plane.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+		this.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -dimesiot*gridDim /2,-dimesiot*gridDim /2, 0) );
+		
+		this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces );
  
         scene.add( this.mesh );
-		this.mesh.position.x = -30;
-		this.mesh.position.y = -30;
-		this.mesh.scale.set(0.1,0.1,0.1);
+/* 		this.mesh.position.x = -30;
+		this.mesh.position.y = -30; */
+		this.mesh.scale.set(0.15,0.15,0.15);
 		
 			//context.stroke();
 	}
