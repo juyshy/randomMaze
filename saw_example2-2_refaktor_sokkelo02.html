@@ -217,6 +217,8 @@ var s ={};
 
 // sokkelo:
 
+ 
+
 function piirraSokkelo() {
 
 		//context.lineWidth = 4;
@@ -232,21 +234,41 @@ function piirraSokkelo() {
 		//context.lineTo( 0, gridDim);
 		//context.stroke();
 		
- 		this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
+ 		//this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
+		this.material = new THREE.MeshPhongMaterial({ color :  0x0000ee, specular: 0xaaaacc, side: THREE.DoubleSide});   // , ambient : 0x9999ff
+		
 		this.geometry = new THREE.Geometry();
+		var korkeus = 2;
 		this.geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
 		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, 0, 0 ) );
-		
+		this.geometry.vertices.push( new THREE.Vector3( 0, 0, korkeus ) );
+		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, 0,korkeus ) );
+		geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+		geometry.faces.push( new THREE.Face3(  1, 2, 3 ) );
+
 		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, 0, 0 ) );
 		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, (dimesiot-1)*gridDim, 0 ) );
+		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, 0, korkeus ) );
+		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, (dimesiot-1)*gridDim,  korkeus ) );
+		geometry.faces.push( new THREE.Face3( 4+0, 4+1, 4+2 ) );
+		geometry.faces.push( new THREE.Face3(  4+1, 4+2, 4+3 ) );
 		
 		this.geometry.vertices.push( new THREE.Vector3(dimesiot*gridDim, dimesiot*gridDim, 0 ) );
-		this.geometry.vertices.push( new THREE.Vector3(0, dimesiot*gridDim, 0 ) );
-
+		this.geometry.vertices.push( new THREE.Vector3(0, dimesiot*gridDim, 0 ) );		
+		this.geometry.vertices.push( new THREE.Vector3(dimesiot*gridDim, dimesiot*gridDim, korkeus ) );
+		this.geometry.vertices.push( new THREE.Vector3(0, dimesiot*gridDim, korkeus ) );
+		geometry.faces.push( new THREE.Face3( 8+0, 8+1, 8+2 ) );
+		geometry.faces.push( new THREE.Face3(  8+1, 8+2, 8+3 ) );
+		
 		this.geometry.vertices.push( new THREE.Vector3(0, dimesiot*gridDim, 0 ) );
 		this.geometry.vertices.push( new THREE.Vector3(0, gridDim, 0 ) );
+		this.geometry.vertices.push( new THREE.Vector3(0, dimesiot*gridDim, korkeus ) );
+		this.geometry.vertices.push( new THREE.Vector3(0, gridDim, korkeus ) );
 		
-
+		geometry.faces.push( new THREE.Face3( 12+0, 12+1, 12+2 ) );
+		geometry.faces.push( new THREE.Face3(  12+1, 12+2, 12+3 ) );
+		
+		var segmentit=0;
 		
 		for (var rivi=0; rivi< dimesiot-1; rivi++) {
 			for (var  i=0; i< dimesiot; i++) {
@@ -256,13 +278,16 @@ function piirraSokkelo() {
 				//console.log("i " + i);
 				if ( !viivaValilla(piste1,piste2)) {
 
-	/* 				//context.moveTo(i*gridDim-offset, rivi*gridDim+offset); 
-					//context.lineTo(i*gridDim+offset,rivi*gridDim+offset);		 */		
+					segmentit +=1;
 					//context.moveTo(i*gridDim, (rivi+1)*gridDim); 
 					//context.lineTo((i+1)*gridDim,(rivi+1)*gridDim);
 					this.geometry.vertices.push( new THREE.Vector3(i*gridDim, (rivi+1)*gridDim, 0 ) );
 					this.geometry.vertices.push( new THREE.Vector3((i+1)*gridDim,(rivi+1)*gridDim, 0 ) );
-			 
+					this.geometry.vertices.push( new THREE.Vector3(i*gridDim, (rivi+1)*gridDim, korkeus ) );
+					this.geometry.vertices.push( new THREE.Vector3((i+1)*gridDim,(rivi+1)*gridDim, korkeus ) );
+			 		geometry.faces.push( new THREE.Face3( segmentit*4+12+0, segmentit*4+12+1, segmentit*4+12+2 ) );
+					geometry.faces.push( new THREE.Face3(  segmentit*4+12+1, segmentit*4+12+2, segmentit*4+12+3 ) );
+					
 				}
 				
 				var piste1 = {x:rivi, y:i};
@@ -270,13 +295,15 @@ function piirraSokkelo() {
 				//console.log("i " + i);
 				if ( !viivaValilla(piste1,piste2)) {
 
-	/* 				//context.moveTo( rivi*gridDim+offset , i*gridDim-offset); 
-					//context.lineTo(rivi*gridDim+offset, i*gridDim+offset);			 */	
+					segmentit +=1;
 					//context.moveTo( (rivi+1)*gridDim , i*gridDim); 
 					//context.lineTo( (rivi+1)*gridDim, (i+1)*gridDim);
 					this.geometry.vertices.push( new THREE.Vector3( (rivi+1)*gridDim , i*gridDim, 0 ) );
 					this.geometry.vertices.push( new THREE.Vector3( (rivi+1)*gridDim, (i+1)*gridDim, 0 ) );
-			 
+					this.geometry.vertices.push( new THREE.Vector3( (rivi+1)*gridDim , i*gridDim, korkeus ) );
+					this.geometry.vertices.push( new THREE.Vector3( (rivi+1)*gridDim, (i+1)*gridDim, korkeus ) );
+					geometry.faces.push( new THREE.Face3( segmentit*4+12+0, segmentit*4+12+1, segmentit*4+12+2 ) );
+					geometry.faces.push( new THREE.Face3(  segmentit*4+12+1, segmentit*4+12+2, segmentit*4+12+3 ) );
 			
 				}
 				
@@ -284,15 +311,18 @@ function piirraSokkelo() {
 			}
 			
 		}	 
-		
-		//plane.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+	 
 		this.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -dimesiot*gridDim /2,-dimesiot*gridDim /2, 0) );
+		this.geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 		
-		this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces );
+		this.geometry.computeBoundingSphere(); 
+		this.geometry.computeFaceNormals();
+		//this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces );
+		this.mesh = new THREE.Mesh(this.geometry, this.material  );
  
         scene.add( this.mesh );
-/* 		this.mesh.position.x = -30;
-		this.mesh.position.y = -30; */
+/* 		this.mesh.position.x = -30;*/
+		this.mesh.position.y = -20; 
 		this.mesh.scale.set(0.15,0.15,0.15);
 		
 			//context.stroke();
@@ -510,7 +540,7 @@ console.log("pathslength " + paths.length );
 <body style="">
 
     <div id="container" style="width:95%; height:80%; position:absolute;"></div>
-	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">Click to animate the terra</div>
+	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">Click to animate </div>
 
 </body>
 </html>
