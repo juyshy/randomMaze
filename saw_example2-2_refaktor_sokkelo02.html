@@ -70,7 +70,8 @@ var s ={};
 	
 	function setCamera() {
         camera = new THREE.PerspectiveCamera( 45, container.offsetWidth / container.offsetHeight, 1, 4000 );
-        camera.position.set( 0, 0, 90 );
+        camera.position.set( 0, 30, 90 );
+		camera.lookAt( new THREE.Vector3( 0, -10, 0 ) );
 	}
 	
 	function letThereBeLight() {
@@ -324,7 +325,7 @@ function piirraSokkelo() {
 /* 		this.mesh.position.x = -30;*/
 		this.mesh.position.y = -20; 
 		this.mesh.scale.set(0.15,0.15,0.15);
-		
+		this.mesh.rotation.y = Math.PI / 4;
 			//context.stroke();
 	}
 	
