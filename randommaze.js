@@ -1,12 +1,12 @@
 
 /*
   
-lähtökohtana algoritmit:
+applying algorithms from here
 http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
 
 http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
  
-yritys: haetaan random tyhjä point, joka on reitillä olevan pointem vieressä
+seeking random empty points, beside the  path
  
 */
 
@@ -291,6 +291,7 @@ function onList(beginningPoint, branchingPoints) {
     }
     return foundOnList;
 }
+
 function drawSaw() {
 
     var freeInit = freeInTheBeginning();
@@ -318,7 +319,7 @@ function drawSaw() {
 
         beginningPoint = beginningOfBranch(freePoints, allSites);
         if (beginningPoint != null) {
-            while (onList(beginningPoint, branchingPoints)) { // kelataan pointitä kunnes löydetään uusi haarautumapoint 
+            while (onList(beginningPoint, branchingPoints)) { // rolling to find a new branching point 
                 beginningPoint = beginningOfBranch(freePoints, allSites);
             }
 
