@@ -1,0 +1,293 @@
+<html>
+<head>
+<style>
+#wrap  {
+margin:50px auto;
+width: 600px;
+}
+</style>
+
+<script>
+ 
+ /*
+ http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
+ // saw_agorithm_canvas_boundary_rajoitettuetsinta.html
+ http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
+ */
+ 
+var dimesiot = 15;
+ 
+var n_steps = (dimesiot+1)*(dimesiot+1)-100;
+var boudaries = {xLeft:0, xRight:dimesiot, yTop:0, yBottom:dimesiot};
+var startX = 0;
+var startY = 0;	
+ 
+ 
+ var context ;
+	window.onload = function(){
+		// haetaan muuttujaan viite DOM canvas elementtiin id:n perusteella
+		var canvas = document.getElementById("canvakseniMun");
+		// luodaan 2d piirtokonteksti canvas objektin getContext() methodilla
+	
+		 context = canvas.getContext("2d");
+		
+		// s‰‰det‰‰n viivan leveys:
+		
+ 
+		context.strokeStyle = "#8badb8";
+		context.lineWidth = 1;
+
+		//context.beginPath();
+ 		for (var i = 0; i< 20; ++i) {
+			context.moveTo(0, i*20); 
+			context.lineTo(400, i*20);
+			context.moveTo(i*20, 0);
+			context.lineTo(i*20, 400);
+		}
+		context.stroke();
+	//context.closePath();
+ 
+		context.strokeStyle = "#121212";
+		context.lineWidth = 3;
+		drawSaw(context);
+	};
+ 
+
+ // http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
+
+ 
+ function drawSaw(context) {
+    console.log( " Self-Avoiding Walks on a Square Lattice\n"
+        + " ---------------------------------------\n"
+        + " Enter number of steps in walk: ");
+     var n_walks;
+ 
+    // n_steps = ;//Number(prompt("Enter number of steps in walk",""));
+    console.log( " Enter number of walks to generate: ");
+	n_walks = 1; // Number(prompt("Enter number of walks to generate:",""));
+ 
+
+    var walks = 0;
+    var failed_walks = 0;
+    var r2av = 0;
+    var r4av = 0;
+
+    // generate walks
+	//var maxtries= 0;
+
+	
+
+	
+	function ulkona(x, y) {
+	  //console.log( " x, y = " + x + "," + y  );
+	return (x > boudaries.xRight ||  x < boudaries.xLeft || y < boudaries.yTop ||   y > boudaries.yBottom); 
+	}
+	
+	function mahdollisetUudetPisteet(x,y, sites) {
+		var mahdolliset = []; 
+		var right = x+1; // step East
+		if ( validSite(right,y, sites)) mahdolliset.push({x:right, y:y});
+		var down = y+1; // step North
+		if (validSite(x,down, sites)) mahdolliset.push({x:x, y:down});
+		var left  = x-1; // step West
+		if ( validSite(left,y, sites)) mahdolliset.push({x:left, y:y});
+		var up = y-1 ; // step South
+		if ( validSite(x,up, sites)) mahdolliset.push({x:x, y:up});		  
+		return mahdolliset;
+	}
+	
+	function validSite (x, y, sites) {
+				var  valid = true;
+				// tarkastetaan on ko uusi satunnainen piste jo varattu
+				
+				for (var i = 0; i < sites.length; i++) {
+	/* 				console.log( "\n s.x " +  s.x);
+				console.log( " s.y " + s.y );
+				console.log( "\n sites[" + i + "].x " + sites[i].x );
+				console.log( "\ sites[" + i + "].y " + sites[i].y ); 
+
+				console.log( " ulkona(s.x, s.y) = " + ulkona(s.x, s.y)  );*/
+				if ( ( x == sites[i].x && y == sites[i].y ) || ulkona(x, y)) {
+						valid = false;
+						//console.log( " valid = " + valid  );
+						break; // jos on niin keskeytet‰‰n tarkistussilmukka
+					}
+				}
+				return valid;
+			}
+			
+	function drawWalk(start, free) {
+
+
+	}	
+			
+    while (walks < n_walks ) {//&& maxtries < 10
+		//maxtries +=1;
+        var sites = []; // set of occupied lattice sites
+        var s ={};
+        s.x = 0;
+        s.y = 0;
+		sites.push({ x:0 , y:0 });
+        //sites.push(s);
+        var walk_failed = false;
+        // loop over desired number of steps
+        for (var step = 0; step < n_steps; step++) {
+            // take a random step
+			 //console.log( " step = " + step  );
+			var mahdolliset = mahdollisetUudetPisteet(s.x, s.y, sites);
+			if (mahdolliset.length > 0) {
+            var d = Math.floor(Math.random()*mahdolliset.length);
+            // console.log( " std_rand = " + d  );
+			// luodaan uusi satunnainen piste
+			
+			s= mahdolliset[d];
+			
+			} else { // jos step ei onnistunut   keskeytet‰‰n steps loop
+            walk_failed = true;
+			//console.log( " walk_failed = " + walk_failed  );
+            break;
+            }
+			//console.log( "sites.push(s); = " + s.x + " " + s.y  );
+            sites.push({ x:s.x , y:s.y });
+        }
+		
+		
+        if (walk_failed) {
+            ++failed_walks;
+            continue;
+        }
+        var r2 = s.x * s.x + s.y * s.y;
+        r2av += r2;
+        r4av += r2 * r2;
+		 //console.log( " step 2 = " + step  );
+        ++walks;
+            console.log( "sites: ");
+			context.beginPath();
+			context.moveTo(startX, startY);
+			
+      for (var i = 0; i < sites.length; i++) {
+            //console.log( "\n sites[" + i + "] x, y: " + sites[i].x + ", " + sites[i].y);
+
+			context.lineTo(startX+ sites[i].x * 20 , startY+ sites[i].y * 20);
+			context.stroke();
+    } 
+		context.closePath();
+
+    }
+
+	function piirraPallo( x,y,vari, lineWidth)  {
+	context.beginPath();
+		context.strokeStyle = vari || "#cc22bb" ;
+		context.arc(  x,y, 4, 0, 2 * Math.PI, false);
+		// context.fillStyle =  "#95b0f2"; // vari ;/* | "#95b082" */
+		//context.fill();
+		context.lineWidth = lineWidth || 3 ;
+		context.stroke();
+		context.closePath(); 
+	}
+	
+ 
+  	function piirraTyhjatPisteet(sites) {
+			var tyhjatpisteet = [];
+			for (var i = 0; i<= boudaries.xRight; i++) {
+				for (var j = 0; j<= boudaries.yBottom; j++) {
+					var tyhja = true;
+		 			for (var si = 0; si < sites.length; si++) {
+						if ( sites[si].x == i && sites[si].y == j ) {
+							tyhja = false;
+							break;
+						}						
+					}
+					if (tyhja) {
+						tyhjatpisteet.push({x:i,y:j});
+						/* context.beginPath();
+						piirraPallo( i*20,j*20);
+						context.closePath();  */
+						//console.log("i,j " + i + "," + j);
+					}
+			
+			}
+		
+		}
+	return tyhjatpisteet;
+	}
+	
+ 
+	var tyhjatpisteet = piirraTyhjatPisteet(sites);
+	
+	for (var si = 0; si < tyhjatpisteet.length; si++) {
+ 
+		piirraPallo( tyhjatpisteet[si].x * 20,tyhjatpisteet[si].y * 20);
+		 
+	
+	}
+	
+	function viereinenTyhja(s,tyhjat) {
+	var viereinen = null;
+	var mahdollisetViereiset = [];
+
+	mahdollisetViereiset.push({x:s.x+1,y:s.y});
+	mahdollisetViereiset.push({x:s.x,y:s.y+1});
+	mahdollisetViereiset.push({x:s.x-1,y:s.y});
+	mahdollisetViereiset.push({x:s.x,y:s.y-1});	
+	for (var i = 0; i < mahdollisetViereiset.length; i++) {
+	piirraPallo( mahdollisetViereiset[i].x * 20, mahdollisetViereiset[i].y * 20, "#2222ff" );
+		for (var si = 0; si < tyhjatpisteet.length; si++) {
+			if (tyhjatpisteet[si].x == mahdollisetViereiset[i].x && tyhjatpisteet[si].y == mahdollisetViereiset[i].y ) {
+			viereinen = {x:mahdollisetViereiset[i].x, y:mahdollisetViereiset[i].y};
+				break;
+			}
+		}
+	}
+ 
+	  
+	return viereinen;
+	
+	}
+	
+	console.log("sites.length " + sites.length);
+	
+	var randomIndx = Math.floor(Math.random() * sites.length);
+	console.log("randomIndx " + randomIndx);
+	piirraPallo( sites[randomIndx].x * 20,sites[randomIndx].y * 20, "#ff22bb" );
+	var viereinen = viereinenTyhja(sites[randomIndx],tyhjatpisteet); 
+	console.dir("viereinen " + viereinen);
+	
+	
+   	while (viereinen == null) {
+		
+		randomIndx = Math.floor(Math.random() * sites.length);
+		viereinen = viereinenTyhja(sites[randomIndx],tyhjatpisteet);  
+
+	}	
+	
+	piirraPallo( viereinen.x * 20,viereinen.y * 20, "#ff22bb",6 );	
+  
+	  
+/* 	var testi={x:0, y:0};
+	console.log("sites.indexOf(testi) " + sites.indexOf(testi));
+  */
+	console.dir(sites);
+    r2av /= n_walks;
+    r4av /= n_walks;
+    var stdDev = Math.sqrt(r4av - r2av * r2av);
+    var totalWalks = n_walks + failed_walks;
+    var failedPercent = failed_walks / totalWalks * 100.0;
+    console.log( " Mean square distance <r^2> = " + r2av + "\n"
+        + " Standard deviation = " + stdDev + "\n"
+        + " Percentage failed walks = " + failedPercent
+		+ "\nwalks " + walks 
+		+ "\nfailed_walks " + failed_walks
+        );
+/* 	console.log("jee"); */
+ }
+
+</script>
+</head>
+<body>
+<div id="wrap">
+	<canvas id="canvakseniMun" width="400" height="400" style="border:1px solid black;">
+	</canvas>
+	</div>
+</body>
+</html>
