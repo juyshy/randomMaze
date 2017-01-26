@@ -1,29 +1,30 @@
 <html>
+
 <head>
-<style>
-#wrap  {
-margin:50px auto;
-width: 600px;
-}
-</style>
+	<style>
+		#wrap {
+			margin: 50px auto;
+			width: 600px;
+		}
+	</style>
 
-<script src="colorkeywords2.js"></script>
+	<script src="colorkeywords2.js"></script>
 
-<script>
+	<script>
  
  /*
   // saw_agorithm_canvas_boundary_rajoitettuetsinta.html
- lähtökohtana algoritmit:
+ lï¿½htï¿½kohtana algoritmit:
  http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
 
  http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
  
  saw_agorithm_canvas_boundary_rajoitettuetsinta_haarautumat.html
  
--haetaan random jo reitillä oleva piste, jolla on tyhjä vieressä
+-haetaan random jo reitillï¿½ oleva piste, jolla on tyhjï¿½ vieressï¿½
  
  saw_agorithm_canvas_boundary_rajoitettuetsinta_haarautumat_02.html
- yritys: haetaan random tyhjä piste, joka on reitillä olevan pisteem vieressä
+ yritys: haetaan random tyhjï¿½ piste, joka on reitillï¿½ olevan pisteem vieressï¿½
  
  */
  
@@ -48,7 +49,7 @@ var vapaat = [] ;
  
  function teeRuudukko() {
  		context.strokeStyle = "#8badb8";
-		// säädetään viivan leveys:
+		// sï¿½ï¿½detï¿½ï¿½n viivan leveys:
 		context.lineWidth = 1;
 
 		//context.beginPath();
@@ -110,7 +111,7 @@ var vapaat = [] ;
 
 				if ( x == vapaat[i].x && y == vapaat[i].y ) {
 						valid = true;
-						break; // jos on niin keskeytetään tarkistussilmukka
+						break; // jos on niin keskeytetï¿½ï¿½n tarkistussilmukka
 					}
 				}
 				return valid;
@@ -197,7 +198,7 @@ function drawSaw(context) {
 			
 			s= mahdolliset[d];
 			poistaVapaista(s);
-			} else { // jos step ei onnistunut   keskeytetään steps loop
+			} else { // jos step ei onnistunut   keskeytetï¿½ï¿½n steps loop
             walk_failed = true;
 			//console.log( " walk_failed = " + walk_failed  );
             break;
@@ -268,7 +269,7 @@ function drawSaw(context) {
 		
 		alkupiste = haarautumanAlku(vapaat, kaikkisites);
 		if (alkupiste != null) {
-			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteitä kunnes löydetään uusi haarautumapiste 
+			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteitï¿½ kunnes lï¿½ydetï¿½ï¿½n uusi haarautumapiste 
 				alkupiste = haarautumanAlku(vapaat, kaikkisites);
 			}
 			//piirraPallo( alkupiste.x , alkupiste.y ,"#dd3390",5) ;
@@ -390,14 +391,16 @@ function drawSaw(context) {
 
 </script>
 </head>
+
 <body>
-<div id="wrap">
-	<canvas id="canvakseniMun" width="600" height="600" style="border:1px solid black;">
-	</canvas>
-	<br><br>
-<!--		<canvas id="canvakseniMun2" width="400" height="400" style="border:1px solid black;">
-	</canvas>
-	</div> -->
+	<div id="wrap">
+		<canvas id="canvakseniMun" width="600" height="600" style="border:1px solid black;">
+		</canvas>
+	</div>
+	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">
+		Reload for new random maze
+	</div>
 
 </body>
+
 </html>
