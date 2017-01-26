@@ -6,20 +6,20 @@ http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
 
 http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
  
-yritys: haetaan random tyhjä piste, joka on reitillä olevan pisteem vieressä
+yritys: haetaan random tyhjä point, joka on reitillä olevan pointem vieressä
  
 */
 
-var dimesiot = 20;
-var n_steps = (dimesiot + 1) * (dimesiot + 1) - 10;
-var boudaries = { xLeft: 0, xRight: dimesiot, yTop: 0, yBottom: dimesiot };
+var mazeSize = 20;
+var n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
+var boudaries = { xLeft: 0, xRight: mazeSize, yTop: 0, yBottom: mazeSize };
 var startX = 0;
 var startY = 0;
 var gridDim = 20;
-var vapaat = [];
+var freePoints = [];
 var paths = [];
-var vareja = [];
-var alkupiste = { x: 0, y: 0 };
+var colors = [];
+var beginningPoint = { x: 0, y: 0 };
 var s = {};
 
 var renderer = null,
@@ -55,36 +55,36 @@ function letThereBeLight() {
 
 for (var prop in ColorKeywords) {
 
-    vareja.push(ColorKeywords[prop])
+    colors.push(ColorKeywords[prop])
 }
 
 
-function vapaatAlussa() {
-    var vapaatPisteet = [];
+function freeInTheBeginning() {
+    var freePointsArray = [];
     for (var i = boudaries.xLeft; i < boudaries.xRight; ++i) {
         for (var j = boudaries.yTop; j < boudaries.yBottom; ++j) {
-            vapaatPisteet.push({ x: i, y: j });
+            freePointsArray.push({ x: i, y: j });
         }
     }
-    return vapaatPisteet;
+    return freePointsArray;
 }
 
 
-function poistaVapaista(piste) {
-    for (var i = 0; i < vapaat.length; ++i) {
-        if (piste.x == vapaat[i].x && piste.y == vapaat[i].y) {
-            vapaat.splice(i, 1);
+function removeFromFree(point) {
+    for (var i = 0; i < freePoints.length; ++i) {
+        if (point.x == freePoints[i].x && point.y == freePoints[i].y) {
+            freePoints.splice(i, 1);
             break;
         }
     }
 }
 
-function onVapaa(x, y, vapaat) {
+function isFree(x, y, freePoints) {
     var valid = false;
-    // tarkastetaan onko uusi satunnainen piste jo varattu
-    for (var i = 0; i < vapaat.length; i++) {
+    // tarkastetaan onko uusi satunnainen point jo varattu
+    for (var i = 0; i < freePoints.length; i++) {
 
-        if (x == vapaat[i].x && y == vapaat[i].y) {
+        if (x == freePoints[i].x && y == freePoints[i].y) {
             valid = true;
             break; // jos on niin keskeytetään tarkistussilmukka
         }
@@ -92,50 +92,50 @@ function onVapaa(x, y, vapaat) {
     return valid;
 }
 
-function mahdollisetUudetPisteet(x, y, vapaat) {
-    var mahdolliset = [];
+function possibleNewPoints(x, y, freePoints) {
+    var possiblePoints = [];
     var right = x + 1; // step East
-    if (onVapaa(right, y, vapaat)) mahdolliset.push({ x: right, y: y });
+    if (isFree(right, y, freePoints)) possiblePoints.push({ x: right, y: y });
     var down = y + 1; // step North
-    if (onVapaa(x, down, vapaat)) mahdolliset.push({ x: x, y: down });
+    if (isFree(x, down, freePoints)) possiblePoints.push({ x: x, y: down });
     var left = x - 1; // step West
-    if (onVapaa(left, y, vapaat)) mahdolliset.push({ x: left, y: y });
+    if (isFree(left, y, freePoints)) possiblePoints.push({ x: left, y: y });
     var up = y - 1; // step South
-    if (onVapaa(x, up, vapaat)) mahdolliset.push({ x: x, y: up });
-    return mahdolliset;
+    if (isFree(x, up, freePoints)) possiblePoints.push({ x: x, y: up });
+    return possiblePoints;
 }
 
 
-function viivaValilla(piste1, piste2) {
+function lineInBetween(point1, point2) {
 
-    var pisteitaloytyi = 0;
-    /* 	var pistetiedot= haeSubPath(piste1); */
+    var foundPoints = 0;
+    /* 	var pointtiedot= haeSubPath(point1); */
     for (var j = 0; j < paths.length; j++) {
         var subpath = paths[j];
-        pisteitaloytyi = 0;
+        foundPoints = 0;
         for (var i = 0; i < subpath.length; i++) {
-            if (i < subpath.length - 1 && (piste1.x == subpath[i].x && piste1.y == subpath[i].y) && (piste2.x == subpath[i + 1].x && piste2.y == subpath[i + 1].y)) {
-                pisteitaloytyi += 1;
+            if (i < subpath.length - 1 && (point1.x == subpath[i].x && point1.y == subpath[i].y) && (point2.x == subpath[i + 1].x && point2.y == subpath[i + 1].y)) {
+                foundPoints += 1;
                 return true;
 
             }
-            if (i > 0 && (piste1.x == subpath[i].x && piste1.y == subpath[i].y) && (piste2.x == subpath[i - 1].x && piste2.y == subpath[i - 1].y)) {
-                pisteitaloytyi += 1;
+            if (i > 0 && (point1.x == subpath[i].x && point1.y == subpath[i].y) && (point2.x == subpath[i - 1].x && point2.y == subpath[i - 1].y)) {
+                foundPoints += 1;
                 return true;
 
             }
         }
-        //console.log("pisteitaloytyi " + pisteitaloytyi);
+        //console.log("foundPoints " + foundPoints);
 
     }
-    //console.dir("pistetiedot " + pistetiedot.subpindx +" " +  pistetiedot.pindx);
+    //console.dir("pointtiedot " + pointtiedot.subpindx +" " +  pointtiedot.pindx);
     return false;
 
 }
 
 // sokkelo:
 
-function piirraSokkelo() {
+function drawMaze() {
 
 
     var offset = gridDim / 2;
@@ -146,72 +146,72 @@ function piirraSokkelo() {
     this.geometry = new THREE.Geometry();
     var korkeus = 5;
     this.geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, 0, 0));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, 0));
     this.geometry.vertices.push(new THREE.Vector3(0, 0, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, 0, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, korkeus));
     geometry.faces.push(new THREE.Face3(0, 1, 2));
     geometry.faces.push(new THREE.Face3(1, 2, 3));
 
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, 0, 0));
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, (dimesiot - 1) * gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, 0, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, (dimesiot - 1) * gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, 0));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, (mazeSize - 1) * gridDim, 0));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, (mazeSize - 1) * gridDim, korkeus));
     geometry.faces.push(new THREE.Face3(4 + 0, 4 + 1, 4 + 2));
     geometry.faces.push(new THREE.Face3(4 + 1, 4 + 2, 4 + 3));
 
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, dimesiot * gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(0, dimesiot * gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(dimesiot * gridDim, dimesiot * gridDim, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(0, dimesiot * gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, mazeSize * gridDim, 0));
+    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, 0));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, mazeSize * gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, korkeus));
     geometry.faces.push(new THREE.Face3(8 + 0, 8 + 1, 8 + 2));
     geometry.faces.push(new THREE.Face3(8 + 1, 8 + 2, 8 + 3));
 
-    this.geometry.vertices.push(new THREE.Vector3(0, dimesiot * gridDim, 0));
+    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, 0));
     this.geometry.vertices.push(new THREE.Vector3(0, gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(0, dimesiot * gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, korkeus));
     this.geometry.vertices.push(new THREE.Vector3(0, gridDim, korkeus));
 
     geometry.faces.push(new THREE.Face3(12 + 0, 12 + 1, 12 + 2));
     geometry.faces.push(new THREE.Face3(12 + 1, 12 + 2, 12 + 3));
 
-    var segmentit = 0;
+    var segments = 0;
 
-    for (var rivi = 0; rivi < dimesiot - 1; rivi++) {
-        for (var i = 0; i < dimesiot; i++) {
+    for (var row = 0; row < mazeSize - 1; row++) {
+        for (var i = 0; i < mazeSize; i++) {
 
-            var piste1 = { x: i, y: rivi };
-            var piste2 = { x: i, y: rivi + 1 };
+            var point1 = { x: i, y: row };
+            var point2 = { x: i, y: row + 1 };
             //console.log("i " + i);
-            if (!viivaValilla(piste1, piste2)) {
+            if (!lineInBetween(point1, point2)) {
 
-                segmentit += 1;
-                this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (rivi + 1) * gridDim, 0));
-                this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (rivi + 1) * gridDim, 0));
-                this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (rivi + 1) * gridDim, korkeus));
-                this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (rivi + 1) * gridDim, korkeus));
-                geometry.faces.push(new THREE.Face3(segmentit * 4 + 12 + 0, segmentit * 4 + 12 + 1, segmentit * 4 + 12 + 2));
-                geometry.faces.push(new THREE.Face3(segmentit * 4 + 12 + 1, segmentit * 4 + 12 + 2, segmentit * 4 + 12 + 3));
+                segments += 1;
+                this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (row + 1) * gridDim, 0));
+                this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (row + 1) * gridDim, 0));
+                this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (row + 1) * gridDim, korkeus));
+                this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (row + 1) * gridDim, korkeus));
+                geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 0, segments * 4 + 12 + 1, segments * 4 + 12 + 2));
+                geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 1, segments * 4 + 12 + 2, segments * 4 + 12 + 3));
 
             }
 
-            var piste1 = { x: rivi, y: i };
-            var piste2 = { x: rivi + 1, y: i };
+            var point1 = { x: row, y: i };
+            var point2 = { x: row + 1, y: i };
             //console.log("i " + i);
-            if (!viivaValilla(piste1, piste2)) {
+            if (!lineInBetween(point1, point2)) {
 
-                segmentit += 1;
-                this.geometry.vertices.push(new THREE.Vector3((rivi + 1) * gridDim, i * gridDim, 0));
-                this.geometry.vertices.push(new THREE.Vector3((rivi + 1) * gridDim, (i + 1) * gridDim, 0));
-                this.geometry.vertices.push(new THREE.Vector3((rivi + 1) * gridDim, i * gridDim, korkeus));
-                this.geometry.vertices.push(new THREE.Vector3((rivi + 1) * gridDim, (i + 1) * gridDim, korkeus));
-                geometry.faces.push(new THREE.Face3(segmentit * 4 + 12 + 0, segmentit * 4 + 12 + 1, segmentit * 4 + 12 + 2));
-                geometry.faces.push(new THREE.Face3(segmentit * 4 + 12 + 1, segmentit * 4 + 12 + 2, segmentit * 4 + 12 + 3));
+                segments += 1;
+                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, i * gridDim, 0));
+                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, (i + 1) * gridDim, 0));
+                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, i * gridDim, korkeus));
+                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, (i + 1) * gridDim, korkeus));
+                geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 0, segments * 4 + 12 + 1, segments * 4 + 12 + 2));
+                geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 1, segments * 4 + 12 + 2, segments * 4 + 12 + 3));
 
             }
         }
     }
 
-    this.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-dimesiot * gridDim / 2, -dimesiot * gridDim / 2, 0));
+    this.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-mazeSize * gridDim / 2, -mazeSize * gridDim / 2, 0));
     this.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(- Math.PI / 2));
 
     this.geometry.computeBoundingSphere();
@@ -228,23 +228,23 @@ function piirraSokkelo() {
 }
 
 
-function stepPoints(alkupiste) {
+function stepPoints(beginningPoint) {
     var sites = []; // set of occupied lattice sites
-    s.x = alkupiste.x;
-    s.y = alkupiste.y;
+    s.x = beginningPoint.x;
+    s.y = beginningPoint.y;
 
     var walk_failed = false;
     for (var step = 0; step < n_steps; step++) {
 
-        var mahdolliset = mahdollisetUudetPisteet(s.x, s.y, vapaat);
+        var possiblePoints = possibleNewPoints(s.x, s.y, freePoints);
 
-        if (mahdolliset.length > 0) {
-            var d = Math.floor(Math.random() * mahdolliset.length);
+        if (possiblePoints.length > 0) {
+            var d = Math.floor(Math.random() * possiblePoints.length);
 
-            // luodaan uusi satunnainen piste
+            // luodaan uusi satunnainen point
 
-            s = mahdolliset[d];
-            poistaVapaista(s);
+            s = possiblePoints[d];
+            removeFromFree(s);
         } else { // jos step ei onnistunut   keskeytetään steps loop
             walk_failed = true;
 
@@ -257,79 +257,79 @@ function stepPoints(alkupiste) {
 }
 
 
-function kaikkiReitillaJoillaVapaaVieressa(vapaat, sites) {
-    var mahdolliset_haarautuvat = []
+function allOnPathWithFreeOnSide(freePoints, sites) {
+    var possiblePoints_branching = []
     for (var i = 0; i < sites.length; i++) {
         /* 		console.log(" sites[i].x " + sites[i].x); */
-        var reitinvieressaOlevatPisteet = mahdollisetUudetPisteet(sites[i].x, sites[i].y, vapaat);
-        for (var j = 0; j < reitinvieressaOlevatPisteet.length; j++) {
-            for (var k = 0; k < vapaat.length; k++) {
-                if (reitinvieressaOlevatPisteet[j].x == vapaat[k].x && reitinvieressaOlevatPisteet[j].y == vapaat[k].y) {
-                    mahdolliset_haarautuvat.push(sites[i]);
+        var pointsBesideThePath = possibleNewPoints(sites[i].x, sites[i].y, freePoints);
+        for (var j = 0; j < pointsBesideThePath.length; j++) {
+            for (var k = 0; k < freePoints.length; k++) {
+                if (pointsBesideThePath[j].x == freePoints[k].x && pointsBesideThePath[j].y == freePoints[k].y) {
+                    possiblePoints_branching.push(sites[i]);
                 }
 
             }
         }
     }
-    return mahdolliset_haarautuvat;
+    return possiblePoints_branching;
 }
 
-function haarautumanAlku(vapaat, sites) {
+function beginningOfBranch(freePoints, sites) {
 
-    var valmiitHaarautumaan = kaikkiReitillaJoillaVapaaVieressa(vapaat, sites);
-    var randindx = Math.floor(Math.random() * valmiitHaarautumaan.length);
-    return valmiitHaarautumaan[randindx];
+    var readyToBranch = allOnPathWithFreeOnSide(freePoints, sites);
+    var randindx = Math.floor(Math.random() * readyToBranch.length);
+    return readyToBranch[randindx];
 }
 
-function onListassa(alkupiste, haarautumaPisteet) {
-    var listassa = false;
-    for (var i = 0; i < haarautumaPisteet.length; i++) {
-        if (alkupiste.x == haarautumaPisteet[i].x && alkupiste.y == haarautumaPisteet[i].y) {
-            listassa = true;
+function onList(beginningPoint, branchingPoints) {
+    var foundOnList = false;
+    for (var i = 0; i < branchingPoints.length; i++) {
+        if (beginningPoint.x == branchingPoints[i].x && beginningPoint.y == branchingPoints[i].y) {
+            foundOnList = true;
             break;
         }
     }
-    return listassa;
+    return foundOnList;
 }
-function drawSaw(context) {
+function drawSaw() {
 
-    var vapaatInit = vapaatAlussa();
-    vapaat = vapaatInit
+    var freeInit = freeInTheBeginning();
+    freePoints = freeInit;
     var siteGroups = [];
 
-    poistaVapaista(alkupiste);
+    removeFromFree(beginningPoint);
 
-    alkupiste.x = startX;
-    alkupiste.y = startY;
-    var kaikkisites = [];
-    var haarautumaPisteet = [];
+    beginningPoint.x = startX;
+    beginningPoint.y = startY;
+    var allSites = [];
+    var branchingPoints = [];
 
 
-    while (vapaat.length > 0 && alkupiste != null) {
+    while (freePoints.length > 0 && beginningPoint != null) {
 
-        var sites = stepPoints(alkupiste);
+        var sites = stepPoints(beginningPoint);
         var subpath = [];
-        subpath.push(alkupiste);
+        subpath.push(beginningPoint);
         subpath = subpath.concat(sites);
         paths.push(subpath);
 
-        kaikkisites = kaikkisites.concat(alkupiste);
-        kaikkisites = kaikkisites.concat(sites);
+        allSites = allSites.concat(beginningPoint);
+        allSites = allSites.concat(sites);
 
-        alkupiste = haarautumanAlku(vapaat, kaikkisites);
-        if (alkupiste != null) {
-            while (onListassa(alkupiste, haarautumaPisteet)) { // kelataan pisteitä kunnes löydetään uusi haarautumapiste 
-                alkupiste = haarautumanAlku(vapaat, kaikkisites);
+        beginningPoint = beginningOfBranch(freePoints, allSites);
+        if (beginningPoint != null) {
+            while (onList(beginningPoint, branchingPoints)) { // kelataan pointitä kunnes löydetään uusi haarautumapoint 
+                beginningPoint = beginningOfBranch(freePoints, allSites);
             }
 
         }
-        haarautumaPisteet.push(alkupiste);
+        branchingPoints.push(beginningPoint);
 
     }
 
     console.log("pathslength " + paths.length);
 
-    piirraSokkelo();
+    drawMaze();
 }
 
 
@@ -344,17 +344,15 @@ function luo3DObjekti() {
 
     this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces);
 
-
     scene.add(this.mesh);
 }
+
 window.onload = function () {
 
     setUpRender();
     setCamera();
     letThereBeLight();
     drawSaw();
-
-
     addMouseHandler();
     run();
 
