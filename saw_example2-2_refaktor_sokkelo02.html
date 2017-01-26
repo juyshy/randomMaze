@@ -15,17 +15,17 @@ width: 600px;
  
  /*
   // saw_agorithm_canvas_boundary_rajoitettuetsinta.html
- l‰htˆkohtana algoritmit:
+ l√§ht√∂kohtana algoritmit:
  http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
 
  http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
  
  saw_agorithm_canvas_boundary_rajoitettuetsinta_haarautumat.html
  
--haetaan random jo reitill‰ oleva piste, jolla on tyhj‰ vieress‰
+-haetaan random jo reitill√§ oleva piste, jolla on tyhj√§ vieress√§
  
  saw_agorithm_canvas_boundary_rajoitettuetsinta_haarautumat_02.html
- yritys: haetaan random tyhj‰ piste, joka on reitill‰ olevan pisteem vieress‰
+ yritys: haetaan random tyhj√§ piste, joka on reitill√§ olevan pisteem vieress√§
  
  */
  
@@ -120,7 +120,7 @@ var s ={};
 
 				if ( x == vapaat[i].x && y == vapaat[i].y ) {
 						valid = true;
-						break; // jos on niin keskeytet‰‰n tarkistussilmukka
+						break; // jos on niin keskeytet√§√§n tarkistussilmukka
 					}
 				}
 				return valid;
@@ -318,7 +318,7 @@ function piirraSokkelo() {
 			
 			s= mahdolliset[d];
 			poistaVapaista(s);
-			} else { // jos step ei onnistunut   keskeytet‰‰n steps loop
+			} else { // jos step ei onnistunut   keskeytet√§√§n steps loop
             walk_failed = true;
 
             break;
@@ -401,7 +401,7 @@ function drawSaw(context) {
 		
 		alkupiste = haarautumanAlku(vapaat, kaikkisites);
 		if (alkupiste != null) {
-			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteit‰ kunnes lˆydet‰‰n uusi haarautumapiste 
+			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteit√§ kunnes l√∂ydet√§√§n uusi haarautumapiste 
 				alkupiste = haarautumanAlku(vapaat, kaikkisites);
 			}
 
