@@ -1,17 +1,18 @@
 <html>
+
 <head>
-<style>
-#wrap  {
-margin:50px auto;
-width: 600px;
-}
-</style>
+	<style>
+		#wrap {
+			margin: 50px auto;
+			width: 600px;
+		}
+	</style>
 	<script src="three.min.js"></script
 	<script src="RequestAnimationFrame.js"></script>
-	
-<script src="colorkeywords2.js"></script>
 
-<script>
+	<script src="colorkeywords2.js"></script>
+
+	<script>
  
  /*
   // saw_agorithm_canvas_boundary_rajoitettuetsinta.html
@@ -192,16 +193,7 @@ function piirraSokkelo() {
 
 		//context.lineWidth = 4;
 		var offset = gridDim / 2;
-		//context.strokeStyle = "#121212";
-		//context.moveTo( 0,0  ); 
-		//context.lineTo( dimesiot*gridDim, 0);
-		
-		//context.lineTo( dimesiot*gridDim, (dimesiot-1)*gridDim);
-		
-		//context.moveTo( dimesiot*gridDim, dimesiot*gridDim );
-		//context.lineTo( 0, dimesiot*gridDim);
-		//context.lineTo( 0, gridDim);
-		//context.stroke();
+
 		
  		//this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
 		this.material = new THREE.MeshPhongMaterial({ color :  0x0000ee, specular: 0xaaaacc, side: THREE.DoubleSide});   // , ambient : 0x9999ff
@@ -274,11 +266,8 @@ function piirraSokkelo() {
 					geometry.faces.push( new THREE.Face3( segmentit*4+12+0, segmentit*4+12+1, segmentit*4+12+2 ) );
 					geometry.faces.push( new THREE.Face3(  segmentit*4+12+1, segmentit*4+12+2, segmentit*4+12+3 ) );
 			
-				}
-				
-				
-			}
-			
+				}		
+			}		
 		}	 
 	 
 		this.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -dimesiot*gridDim /2,-dimesiot*gridDim /2, 0) );
@@ -297,15 +286,12 @@ function piirraSokkelo() {
 			//context.stroke();
 	}
 	
- 
 	
 	function stepPoints(alkupiste) {
 	var sites = []; // set of occupied lattice sites
 	s.x = alkupiste.x;
 	s.y = alkupiste.y;
- 
- 
- 
+
 	var walk_failed = false;
 	for (var step = 0; step < n_steps; step++) {
 		
@@ -350,7 +336,6 @@ function piirraSokkelo() {
 	function haarautumanAlku(vapaat, sites) {
 	
 		var valmiitHaarautumaan= kaikkiReitillaJoillaVapaaVieressa(vapaat, sites);
-
 		var randindx = Math.floor(Math.random() * valmiitHaarautumaan.length);
 		return valmiitHaarautumaan[randindx];
 	}
@@ -362,20 +347,16 @@ function piirraSokkelo() {
 				listassa = true;
 				break;
 				}
-		
 			}
 			return listassa;
 	}
 function drawSaw(context) {
 
-
 	var vapaatInit = vapaatAlussa();
-
 	vapaat = vapaatInit
 	var siteGroups = []; 
 
 	poistaVapaista(alkupiste);
-
 
 	alkupiste.x = startX;
 	alkupiste.y = startY;
@@ -384,7 +365,6 @@ function drawSaw(context) {
 
 	
 	while (vapaat.length > 0 && alkupiste != null) {  
-
 
 		var sites = stepPoints(alkupiste);
 		var subpath = [];
@@ -395,10 +375,6 @@ function drawSaw(context) {
 		kaikkisites = kaikkisites.concat(alkupiste);
 		kaikkisites = kaikkisites.concat(sites);
 
-
-		
-
-		
 		alkupiste = haarautumanAlku(vapaat, kaikkisites);
 		if (alkupiste != null) {
 			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteitä kunnes löydetään uusi haarautumapiste 
@@ -407,25 +383,11 @@ function drawSaw(context) {
 
 		}
 		haarautumaPisteet.push(alkupiste);
-/* 		if (alkupiste != null) {
-		console.log("alkupiste " + alkupiste.x + " " + alkupiste.y);
-		
-		} */
-	
+ 
 	}
 	
-console.log("pathslength " + paths.length );
+	console.log("pathslength " + paths.length );
 
-
-
-		for (var i = 0; i < paths.length; i++) {
-
-
-
-		}
-		
-		 */
-	 
 	piirraSokkelo();
  }
   
@@ -491,10 +453,12 @@ console.log("pathslength " + paths.length );
 	</script>
 
 </head>
+
 <body style="">
 
-    <div id="container" style="width:95%; height:80%; position:absolute;"></div>
+	<div id="container" style="width:95%; height:80%; position:absolute;"></div>
 	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">Click to animate </div>
 
 </body>
+
 </html>
