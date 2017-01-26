@@ -38,8 +38,6 @@ var startY = 0;
 var gridDim = 20;
 var vapaat = [] ;
  
- //var context ;
- //var context2;
  var paths = [];
 	
  var vareja = [];
@@ -47,7 +45,7 @@ var vapaat = [] ;
 	
 var s ={};
 	
-	///////////////////////
+
 	
 		var renderer = null, 
 		scene = null, 
@@ -81,41 +79,16 @@ var s ={};
 		
 		}
 	
-	///////////////////
+
 	
 	
 		for (var prop in ColorKeywords) {
-/* 			console.log(ColorKeywords[prop]); // prints out the property name */
+
 			vareja.push(ColorKeywords[prop])
 		}
-		//console.log("vareja.length " + vareja.length);
- 
- function teeRuudukko() {
- 		//context.strokeStyle = "#8badb8";
-		// s‰‰det‰‰n viivan leveys:
-		//context.lineWidth = 1;
 
-		////context.beginPath();
-		// ruudukko
- 		for (var i = 0; i< dimesiot; ++i) {
-			//context.moveTo(0, i*gridDim); 
-			//context.lineTo(400, i*gridDim);
-			//context.moveTo(i*gridDim, 0);
-			//context.lineTo(i*gridDim, 400);
-		}
-		//context.stroke();
- }
+  
  
-	function piirraPallo( x,y,vari, lineWidth)  {
-	//context.beginPath();
-		//context.strokeStyle = vari || "#cc22bb" ;
-		//context.arc(  x*gridDim,y*gridDim, 4, 0, 2 * Math.PI, false);
-		// //context.fillStyle =  "#95b0f2"; // vari ;/* | "#95b082" */
-		////context.fill();
-		//context.lineWidth = lineWidth || 3 ;
-		//context.stroke();
-		//context.closePath(); 
-	}
  
   function vapaatAlussa() {
 	var vapaatPisteet = [];
@@ -129,11 +102,6 @@ var s ={};
 	return vapaatPisteet;
   }
  
-  function piirraPisteet(vapaat, vari, lineWidth) {
-	for (var i = 0; i< vapaat.length; ++i) {
-		piirraPallo(vapaat[i].x , vapaat[i].y ,vari, lineWidth);
-	}
-  }
  
    function poistaVapaista(piste) {
 		for (var i = 0; i< vapaat.length; ++i) {
@@ -239,7 +207,7 @@ function piirraSokkelo() {
 		this.material = new THREE.MeshPhongMaterial({ color :  0x0000ee, specular: 0xaaaacc, side: THREE.DoubleSide});   // , ambient : 0x9999ff
 		
 		this.geometry = new THREE.Geometry();
-		var korkeus = 2;
+		var korkeus = 5;
 		this.geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
 		this.geometry.vertices.push( new THREE.Vector3( dimesiot*gridDim, 0, 0 ) );
 		this.geometry.vertices.push( new THREE.Vector3( 0, 0, korkeus ) );
@@ -335,32 +303,27 @@ function piirraSokkelo() {
 	var sites = []; // set of occupied lattice sites
 	s.x = alkupiste.x;
 	s.y = alkupiste.y;
-/* 	if (pisteOnListassa(alkupiste,sites) {
-	sites.push({x:s.x , y:s.y });
-	} */
-	
-	
-	
-	//piirraPisteet(vapaat);
-	
+ 
+ 
+ 
 	var walk_failed = false;
 	for (var step = 0; step < n_steps; step++) {
 		
 		var mahdolliset = mahdollisetUudetPisteet(s.x, s.y, vapaat);
-		//piirraPisteet(mahdolliset,  "#95b0f2",4);
+ 
 		if (mahdolliset.length > 0) {
             var d = Math.floor(Math.random()*mahdolliset.length);
-            // console.log( " std_rand = " + d  );
+
 			// luodaan uusi satunnainen piste
 			
 			s= mahdolliset[d];
 			poistaVapaista(s);
 			} else { // jos step ei onnistunut   keskeytet‰‰n steps loop
             walk_failed = true;
-			//console.log( " walk_failed = " + walk_failed  );
+
             break;
             }
-			//console.log( "sites.push(s); = " + s.x + " " + s.y  );
+
             sites.push({ x:s.x , y:s.y });
 	}
 	return sites;
@@ -387,7 +350,7 @@ function piirraSokkelo() {
 	function haarautumanAlku(vapaat, sites) {
 	
 		var valmiitHaarautumaan= kaikkiReitillaJoillaVapaaVieressa(vapaat, sites);
-		//piirraPisteet(valmiitHaarautumaan);
+
 		var randindx = Math.floor(Math.random() * valmiitHaarautumaan.length);
 		return valmiitHaarautumaan[randindx];
 	}
@@ -421,8 +384,8 @@ function drawSaw(context) {
 
 	
 	while (vapaat.length > 0 && alkupiste != null) {  
-		//for (var i=0; i < 5; i++){
-		//console.log("i " + i);
+
+
 		var sites = stepPoints(alkupiste);
 		var subpath = [];
 		subpath.push(alkupiste);
@@ -431,17 +394,17 @@ function drawSaw(context) {
 		
 		kaikkisites = kaikkisites.concat(alkupiste);
 		kaikkisites = kaikkisites.concat(sites);
-		//context.strokeStyle =  "#A50052";//"#ffffff";
-		//context.lineWidth = 3;
+
+
 		
-		//drawSawPath(alkupiste.x, alkupiste.y, sites, //context);//,  "#050002",4);
+
 		
 		alkupiste = haarautumanAlku(vapaat, kaikkisites);
 		if (alkupiste != null) {
 			while (onListassa(alkupiste,haarautumaPisteet)) { // kelataan pisteit‰ kunnes lˆydet‰‰n uusi haarautumapiste 
 				alkupiste = haarautumanAlku(vapaat, kaikkisites);
 			}
-			//piirraPallo( alkupiste.x , alkupiste.y ,"#dd3390",5) ;
+
 		}
 		haarautumaPisteet.push(alkupiste);
 /* 		if (alkupiste != null) {
@@ -453,12 +416,12 @@ function drawSaw(context) {
 	
 console.log("pathslength " + paths.length );
 
-/* 		//context2.strokeStyle =  "#00CED1";// "#121212";
-		//context2.lineWidth = 3;
+
+
 		for (var i = 0; i < paths.length; i++) {
-			//context2.strokeStyle = vareja[i+10];
-			//console.log("vareja[i] " + vareja[i]);
-			drawSawPath(paths[i][0].x, paths[i][0].y, paths[i], //context2);//, 
+
+
+
 		}
 		
 		 */
@@ -477,27 +440,17 @@ console.log("pathslength " + paths.length );
 		this.geometry.vertices.push( new THREE.Vector3( 3,  0, 0 ) );
 
        this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces );
- /*         this.mesh.rotation.x = Math.PI / 5;
-        this.mesh.rotation.y = Math.PI / 5; */
-		//this.mesh.scale =  new THREE.Vector3( scale,scale,scale )
+ 
+
         scene.add( this.mesh );
 	}
  window.onload = function(){
-		// haetaan muuttujaan viite DOM canvas elementtiin id:n perusteella
-		//var canvas = document.getElementById("canvakseniMun");
-/* 		var canvas2 = document.getElementById("canvakseniMun2");
-		 */
-		// luodaan 2d piirtokonteksti canvas objektin get//context() methodilla
-		////context = canvas.get//context("2d");	
-/* 		//context2 = canvas2.get//context("2d");	 */
-  		//teeRuudukko();
-		
-		
+ 		
 		setUpRender();
 		setCamera();
 		letThereBeLight();
 		drawSaw( ); 
-		//kdobj = new luo3DObjekti();
+
 		
         addMouseHandler();
         run();
