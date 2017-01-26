@@ -1,0 +1,10 @@
+ Volume in drive E is Docut
+ Volume Serial Number is CAAA-D7AA
+
+ Directory of E:\webgl\randomMaze
+
+26.01.2017  20:33    <DIR>          .
+26.01.2017  20:33    <DIR>          ..
+26.01.2017  20:33                 0 deleteme.txt
+               1 File(s)              0 bytes
+               2 Dir(s)  45ÿ483ÿ679ÿ744 bytes free
