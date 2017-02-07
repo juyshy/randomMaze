@@ -10,6 +10,9 @@ seeking random empty points, beside the  path
  
 */
 
+/*jslint browser: true*/
+/*global alert, THREE, container, ColorKeywords,geometry*/
+
 var mazeSize = 20;
 var n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
 var boudaries = { xLeft: 0, xRight: mazeSize, yTop: 0, yBottom: mazeSize };
@@ -25,16 +28,16 @@ var s = {};
 var renderer = null,
     scene = null,
     camera = null,
-    terra = null,
+    //terra = null,
     animating = false;
 
-var kdobj;
+//var kdobj;
 
 function setUpRender() {
 
     var container = document.getElementById("container");
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    console.log("container.offsetWidth " + container.offsetWidth);
+    // console.log("container.offsetWidth " + container.offsetWidth);
     renderer.setSize(container.offsetWidth, container.offsetHeight);
     container.appendChild(renderer.domElement);
     scene = new THREE.Scene();
@@ -55,7 +58,7 @@ function letThereBeLight() {
 
 for (var prop in ColorKeywords) {
 
-    colors.push(ColorKeywords[prop])
+    colors.push(ColorKeywords[prop]);
 }
 
 
@@ -138,7 +141,7 @@ function lineInBetween(point1, point2) {
 function drawMaze() {
 
 
-    var offset = gridDim / 2;
+    //var offset = gridDim / 2;
 
     //this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
     this.material = new THREE.MeshPhongMaterial({ color: 0xaa0fff, specular: 0xaaaacc, side: THREE.DoubleSide });   // , ambient : 0x9999ff
@@ -194,8 +197,8 @@ function drawMaze() {
 
             }
 
-            var point1 = { x: row, y: i };
-            var point2 = { x: row + 1, y: i };
+            point1 = { x: row, y: i };
+            point2 = { x: row + 1, y: i };
             //console.log("i " + i);
             if (!lineInBetween(point1, point2)) {
 
@@ -258,7 +261,7 @@ function stepPoints(beginningPoint) {
 
 
 function allOnPathWithFreeOnSide(freePoints, sites) {
-    var possiblePoints_branching = []
+    var possiblePoints_branching = [];
     for (var i = 0; i < sites.length; i++) {
         /* 		console.log(" sites[i].x " + sites[i].x); */
         var pointsBesideThePath = possibleNewPoints(sites[i].x, sites[i].y, freePoints);
@@ -328,7 +331,7 @@ function drawSaw() {
 
     }
 
-    console.log("pathslength " + paths.length);
+    //console.log("pathslength " + paths.length);
 
     drawMaze();
 }
@@ -337,7 +340,7 @@ function drawSaw() {
 function luo3DObjekti() {
 
     this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
-    this.geometry = new THREE.Geometry()
+    this.geometry = new THREE.Geometry();
     this.geometry.vertices.push(new THREE.Vector3(-1, 0, 0));
     this.geometry.vertices.push(new THREE.Vector3(1, 0, 0));
     this.geometry.vertices.push(new THREE.Vector3(0, 1, 0));
@@ -358,7 +361,7 @@ window.onload = function () {
     run();
 
 };
- 
+
 
 function run() {
     // Render the scene
@@ -376,7 +379,7 @@ function run() {
 function addMouseHandler() {
     var dom = renderer.domElement;
 
-    dom.addEventListener('mouseup', onMouseUp, false);
+    dom.addEventListener("mouseup", onMouseUp, false);
 }
 
 function onMouseUp(event) {
