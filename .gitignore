@@ -2,3 +2,5 @@
 *.cpp
 *.xml
 readme.html
+build/
+ball/js/
