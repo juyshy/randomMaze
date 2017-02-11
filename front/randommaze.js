@@ -53,6 +53,9 @@ var bounce = -0.7;
 //var rightBoundary, leftBoundary, topBoundary, bottomBoundary;
 var   lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
 
+var $lastR = 0;
+var $lastL = 0;
+
 function setUpRender() {
     var container = document.getElementById("container");
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -450,8 +453,11 @@ function run() {
     //console.log(timer);
     var timedelta = timer - prevTime;
     prevTime = timer;
-    mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
-    mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+   // mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
+   // mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+
+    mesh.rotation.z += ($lastL - mesh.rotation.z) * 0.02;
+    mesh.rotation.x -= ($lastR + mesh.rotation.x) * 0.02;
 
     var secs = Math.round(timer);
     var gridPos = { x: 0, y: 0 };
@@ -599,4 +605,70 @@ function onMouseUp(event) {
     event.preventDefault();
 
     animating = !animating;
+}
+
+
+
+var socket = io.connect("/", {
+    "reconnect": true,
+    "reconnection delay": 500,
+    "max reconnection attempts": 10
+});
+
+
+
+socket.on("message", function (data) {
+
+    data = process_data(data);
+
+    /* Initial position */
+    if ($lastR == -1) {
+        $lastR = data.x;
+        $lastL = data.y;
+    }
+
+    $lastR = data.r;
+    //console.log($lastR);
+    $lastL = data.l;
+    //renderScene();
+
+});
+
+
+function process_data(data) {
+
+    var ret = {
+        r: 0,
+        l: 0
+    };
+
+    var array = data.split(',');
+
+    if (array.length < 2)
+        return ret;
+
+    ret.r = array[0];
+    ret.l = array[1];
+
+    ret = sanitize_size(ret);
+
+    return ret;
+}
+
+/* Convert pot values to row oar degrees. */
+function sanitize_size(values) {
+    var ret = {
+        r: 0,
+        l: 0
+    };
+    var accelVal1Rest = 234;
+    var accelVal2Rest = 180;
+
+
+    degreeR = ((values.r - accelVal1Rest) * 0.01);
+    degreeL = (values.l - accelVal2Rest) * 0.01;
+    ret.r = -degreeR * 0.0174533;
+    ret.l = -degreeL * 0.0174533;
+    //console.log(values.r, (values.r - min_potR), degreeR, ret.r);
+    return ret;
 }
