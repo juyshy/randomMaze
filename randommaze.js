@@ -3,7 +3,6 @@
   
 applying algorithms from here
 http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
-
 http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
  
 seeking random empty points, beside the  path
@@ -13,18 +12,19 @@ seeking random empty points, beside the  path
 /*jslint browser: true*/
 /*global alert, THREE, container, ColorKeywords,geometry*/
 
-var mazeSize = 20,
-    startX = 0,
+var mazeSize = 10, gridDim = 30;
+var gridBoundariesBebugActive = false;
+
+var startX = 0,
     startY = 0,
-    gridDim = 20,
     s = {},
     freePoints = [],
     paths = [],
     colors = [];
 var rightEdge = mazeSize * gridDim / 2,
     leftEdge = -mazeSize * gridDim / 2,
-    bottomEdge = mazeSize * gridDim / 2,
-    topEdge = -mazeSize * gridDim / 2;
+    bottomEdge = - mazeSize * gridDim / 2,
+    topEdge = mazeSize * gridDim / 2;
 var height = 15;
 var n_steps,
     freePoints,
@@ -49,10 +49,10 @@ var rotaAngle;
 var allFreePoints = [];
 var prevSec = 0;
 var bounce = -0.7;
-
+var rightBoundary, leftBoundary, topBoundary, bottomBoundary;
+var lineEdge, lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
 
 function setUpRender() {
-
     var container = document.getElementById("container");
     renderer = new THREE.WebGLRenderer({ antialias: true });
     // console.log("container.offsetWidth " + container.offsetWidth);
@@ -63,7 +63,7 @@ function setUpRender() {
 
 function setCamera() {
     camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
-    camera.position.set(-2, 130, 80);
+    camera.position.set(-7, 140, 80);
     camera.lookAt(new THREE.Vector3(0, -10, 0));
 }
 
@@ -218,7 +218,7 @@ function drawMaze() {
             }
 
             point1 = { x: row, y: i };
-            point2 = { x: row + 1, y: i };
+            point2 = { x: row + 1, y: i }; // right edge
             //console.log("i " + i);
             if (!lineInBetween(point1, point2)) {
 
@@ -401,6 +401,37 @@ function onDocumentMouseMove(event) {
     mouseY = (event.clientY - windowHalfY);
 }
 
+function gridBoundriesDebug() {
+
+    var line_geometry2 = new THREE.Geometry();
+    line_geometry2.vertices.push(new THREE.Vector3(0, 0, 0));
+    line_geometry2.vertices.push(new THREE.Vector3(gridDim, 0, 0));
+    var line_materialL = new THREE.LineBasicMaterial({ color: 0xF0F686, linewidth: 6 });
+    var line_materialR = new THREE.LineBasicMaterial({ color: 0x4036F6, linewidth: 6 });
+    var line_materialT = new THREE.LineBasicMaterial({ color: 0xFF5646, linewidth: 6 });
+    var line_materialB = new THREE.LineBasicMaterial({ color: 0x00F6f6, linewidth: 6 });
+
+    var line_geometry3 = new THREE.Geometry();
+    line_geometry3.vertices.push(new THREE.Vector3(0, 0, 0));
+    line_geometry3.vertices.push(new THREE.Vector3(0, 0, gridDim));
+
+    lineEdgeL = new THREE.LineSegments(line_geometry3, line_materialL);
+    lineEdgeR = new THREE.LineSegments(line_geometry3, line_materialR);
+    lineEdgeTop = new THREE.LineSegments(line_geometry2, line_materialT);
+    lineEdgeDown = new THREE.LineSegments(line_geometry2, line_materialB);
+
+    lineEdgeL.position.y = gridDim;
+    lineEdgeR.position.y = gridDim;
+    lineEdgeTop.position.y = gridDim;
+    lineEdgeDown.position.y = gridDim;
+    lineEdgeR.position.x = gridDim;
+    lineEdgeDown.position.z = gridDim;
+
+    mesh.add(lineEdgeL);
+    mesh.add(lineEdgeR);
+    mesh.add(lineEdgeTop);
+    mesh.add(lineEdgeDown);
+}
 
 $(function () {
 
@@ -410,6 +441,10 @@ $(function () {
     allFreePoints = freeInTheBeginning();
     initMaze();
 
+    if (gridBoundariesBebugActive) {
+        gridBoundriesDebug();
+
+    }
     addMouseHandler();
     run();
 
@@ -428,8 +463,8 @@ function run() {
     //console.log(timer);
     var timedelta = timer - prevTime;
     prevTime = timer;
-    mesh.rotation.z -= (mouseX * 0.0003 + mesh.rotation.z) * 0.02;
-    mesh.rotation.x += (mouseY * 0.0004 - mesh.rotation.x) * 0.02;
+    mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
+    mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
 
     var secs = Math.round(timer);
     var gridPos = { x: 0, y: 0 };
@@ -439,18 +474,67 @@ function run() {
     var neighbourGridPositions = possibleNewPoints(gridPos.x, gridPos.y, allFreePoints);
     var gridPosBoundaries = [];
 
+    var boundariesActive = { "right": true, "down": true, "left": true, "up": true };
+
+
+    var boundaries = { right: rightEdge, left: leftEdge, down: bottomEdge, up: topEdge };
     neighbourGridPositions.forEach(function (element) {
+
         var passage = lineInBetween(gridPos, element);
         gridPosBoundaries.push({ "passage": passage, "neighbour": element })
+        if (element.dir == "right" && passage) {
+            boundariesActive.right = false;
+        } else if (element.dir == "right" && !passage) {
+            boundaries.right = (element.x) * gridDim - mazeSize * gridDim / 2;
+        }
+
+        if (element.dir == "down" && passage) {
+            boundariesActive.down = false;
+        } else if (element.dir == "down" && !passage) {
+            boundaries.down = - (element.y) * gridDim + mazeSize * gridDim / 2;
+        }
+        if (element.dir == "left" && passage) {
+            boundariesActive.left = false;
+        } else if (element.dir == "left" && !passage) {
+            boundaries.left = (element.x + 1) * gridDim - mazeSize * gridDim / 2;
+        }
+        if (element.dir == "up" && passage) {
+            boundariesActive.up = false;
+        } else if (element.dir == "up" && !passage) {
+            boundaries.up = - (element.y + 1) * gridDim + mazeSize * gridDim / 2;
+        }
+        /* boundaries.right = (element.x) * gridDim - mazeSize * gridDim / 2;
+         boundaries.down = - (element.y) * gridDim + mazeSize * gridDim / 2;
+         boundaries.left = (element.x + 1) * gridDim - mazeSize * gridDim / 2;
+         boundaries.up = - (element.y + 1) * gridDim + mazeSize * gridDim / 2;*/
     });
+
+
+    if (gridBoundariesBebugActive) {
+        lineEdgeL.position.x = boundaries.left;
+        lineEdgeL.position.z = boundaries.up + gridDim;
+        lineEdgeR.position.x = boundaries.right;
+        // lineEdgeR.position.z = boundaries.bottom;
+        lineEdgeTop.position.z = boundaries.up;
+        lineEdgeDown.position.z = boundaries.down;
+    }
+    // lineEdge.position.z = boundaries.down;
 
     if (prevSec != secs) {
         console.log(ball.position);
         console.log(gridPos, neighbourGridPositions);
 
         console.log(gridPosBoundaries);
+        console.log(boundaries);
 
 
+        gridPosBoundaries.forEach(function (element) {
+            console.log(element.passage, element.neighbour.dir);
+            if (!element.passage) {
+                console.log("boundary in ", element.neighbour.dir, element.neighbour);
+
+            }
+        });
     }
     prevSec = secs;
     if (timedelta > 1) {
@@ -473,6 +557,28 @@ function run() {
     ball.position.x -= vx;
     ball.position.z += vz;
 
+    if (boundariesActive.right && ball.position.x + ballSize > boundaries.right) {
+        ball.position.x = boundaries.right - ballSize;
+        vx *= bounce;
+        //vz *= 0.9;
+    }
+    if (boundariesActive.left && ball.position.x - ballSize < boundaries.left) {
+        ball.position.x = boundaries.left + ballSize;
+        vx *= bounce;
+        // vz *= 0.9;
+    }
+    if (boundariesActive.down && ball.position.z - ballSize < boundaries.down) {
+        ball.position.z = boundaries.down + ballSize;
+        vz *= bounce;
+        // vx *= 0.9;
+    }
+    if (boundariesActive.up && ball.position.z + ballSize > boundaries.up) {
+        ball.position.z = boundaries.up - ballSize;
+        vz *= bounce;
+        //vx *= 0.9;
+    }
+
+
     if (ball.position.x + ballSize > rightEdge) {
         ball.position.x = rightEdge - ballSize;
         vx *= bounce;
@@ -482,12 +588,12 @@ function run() {
         vx *= bounce;
         vz *= 0.9;
     }
-    if (ball.position.z + ballSize > bottomEdge) {
-        ball.position.z = bottomEdge - ballSize;
+    if (ball.position.z + ballSize > topEdge) {
+        ball.position.z = topEdge - ballSize;
         vz *= bounce;
         vx *= 0.9;
-    } else if (ball.position.z - ballSize < topEdge) {
-        ball.position.z = topEdge + ballSize;
+    } else if (ball.position.z - ballSize < bottomEdge) {
+        ball.position.z = bottomEdge + ballSize;
         vz *= bounce;
         vx *= 0.9;
     }
