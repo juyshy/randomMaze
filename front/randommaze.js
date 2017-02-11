@@ -13,7 +13,9 @@ seeking random empty points, beside the  path
 /*global $, alert, THREE, container, ColorKeywords,geometry,Ball*/
 /* eslint-disable   no-console */
 
-var mazeSize = 10, gridDim = 30;
+var mazeSize = 15, gridDim = 25;
+var boardActive = false;
+var soundOn = false;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
 var ballSize = 5;
@@ -51,8 +53,8 @@ var allFreePoints = [];
 var prevSec = 0;
 var bounce = -0.7;
 //var rightBoundary, leftBoundary, topBoundary, bottomBoundary;
-var   lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
-
+var lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
+var hit;
 var $lastR = 0;
 var $lastL = 0;
 
@@ -135,7 +137,7 @@ function possibleNewPoints(x, y, freePoints) {
 
 function lineInBetween(point1, point2) {
 
- 
+
     /* 	var pointtiedot= haeSubPath(point1); */
     for (var j = 0; j < paths.length; j++) {
         var subpath = paths[j];
@@ -377,7 +379,7 @@ function drawSaw() {
     drawMaze();
 }
 
- 
+
 function initMaze() {
     drawSaw();
     ball = Ball(ballSize);
@@ -422,8 +424,19 @@ function gridBoundriesDebug() {
     mesh.add(lineEdgeTop);
     mesh.add(lineEdgeDown);
 }
-
+function setup() {
+    //Initialize sounds here
+    hit = sounds["sound///hit.wav"];
+}
 $(function () {
+
+    //    snd = new Audio("sound///hit.wav"); // buffers automatically when created
+    sounds.load([
+        "sound///hit.wav",/* 
+  "sounds/music.wav",
+  "sounds/bounce.mp3"*/
+    ]);
+    sounds.whenLoaded = setup;
 
     setUpRender();
     setCamera();
@@ -445,20 +458,38 @@ $(function () {
     document.addEventListener("mousemove", onDocumentMouseMove, false);
 
 });
+function shootSound(vol, freq) {
+    soundEffect(
+        freq,           //frequency
+        0,                //attack
+        0.1,              //decay
+        "sawtooth",       //waveform
+        vol,                //Volume
+        -0.8,             //pan
+        0,                //wait before playing
+        1200,             //pitch bend amount
+        false,            //reverse bend
+        0,                //random pitch range
+        45,               //dissonance
+        [0.1, 0.1, 1000], //echo array: [delay, feedback, filter]
+        undefined         //reverb array: [duration, decay, reverse?]
+    );
+}
 
-
+var hitSec = 0;
 function run() {
     // Render the scene
     var timer = 0.001 * Date.now();
     //console.log(timer);
     var timedelta = timer - prevTime;
     prevTime = timer;
-   // mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
-   // mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
-
-    mesh.rotation.z += ($lastL - mesh.rotation.z) * 0.02;
-    mesh.rotation.x -= ($lastR + mesh.rotation.x) * 0.02;
-
+    if (!boardActive) {
+        mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
+        mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+    } else {
+        mesh.rotation.z += ($lastL * 2 - mesh.rotation.z) * 0.02;
+        mesh.rotation.x -= ($lastR * 2 + mesh.rotation.x) * 0.02;
+    }
     var secs = Math.round(timer);
     var gridPos = { x: 0, y: 0 };
     gridPos.x = Math.round(((ball.position.x + (mazeSize * gridDim / 2)) / (gridDim / 2) - 1) / 2);
@@ -471,7 +502,7 @@ function run() {
     neighbourGridPositions.forEach(function (element) {
 
         var passage = lineInBetween(gridPos, element);
-        
+
         if (element.dir == "right" && passage) {
             boundariesActive.right = false;
         } else if (element.dir == "right" && !passage) {
@@ -548,24 +579,94 @@ function run() {
     ball.position.x -= vx;
     ball.position.z += vz;
 
+    var minumumSoundPause = 0.7;
+    var sefvolume = 1;
     if (boundariesActive.right && ball.position.x + ballSize > boundaries.right) {
         ball.position.x = boundaries.right - ballSize;
         vx *= bounce;
+
+        if (soundOn) {
+            var prevSoundTime = timer - hitSec;
+            if (prevSoundTime > minumumSoundPause) {
+                sefvolume = vx * prevSoundTime * 0.4;
+                if (sefvolume > 1) {
+                    sefvolume = 1;
+                }
+
+                shootSound(sefvolume, prevSoundTime * 400);
+
+                //hit.volume = sefvolume;
+                //hit.pause();
+                //hit.playFrom(0);
+                hitSec = timer;
+            }
+        }
+
+        //   //hit.play();
         //vz *= 0.9;
     }
     if (boundariesActive.left && ball.position.x - ballSize < boundaries.left) {
         ball.position.x = boundaries.left + ballSize;
         vx *= bounce;
+        if (soundOn) {
+            var prevSoundTime = timer - hitSec;
+            if (prevSoundTime > minumumSoundPause) {
+                sefvolume = vx * prevSoundTime * 0.4;
+                if (sefvolume > 1) {
+                    sefvolume = 1;
+                }
+                shootSound(sefvolume, prevSoundTime * 300);
+                hitSec = timer;
+
+                //hit.volume = sefvolume;
+                //hit.pause();
+                //hit.playFrom(0);
+            }
+        }
+        //    //hit.play();
         // vz *= 0.9;
     }
     if (boundariesActive.down && ball.position.z - ballSize < boundaries.down) {
         ball.position.z = boundaries.down + ballSize;
         vz *= bounce;
+        if (soundOn) {
+            var prevSoundTime = timer - hitSec;
+            if (prevSoundTime > minumumSoundPause) {
+                sefvolume = vx * prevSoundTime * 0.4;
+                if (sefvolume > 1) {
+                    sefvolume = 1;
+                }
+                shootSound(sefvolume, prevSoundTime * 500);
+                hitSec = timer;
+                sefvolume = vx * prevSoundTime * 0.4;
+
+                //hit.volume = sefvolume;
+                //hit.pause();
+                //hit.playFrom(0);
+            }
+        }
+
         // vx *= 0.9;
     }
     if (boundariesActive.up && ball.position.z + ballSize > boundaries.up) {
         ball.position.z = boundaries.up - ballSize;
         vz *= bounce;
+        //   //hit.play();
+        if (soundOn) {
+            var prevSoundTime = timer - hitSec;
+            if (prevSoundTime > minumumSoundPause) {
+                sefvolume = vx * prevSoundTime * 0.4;
+                if (sefvolume > 1) {
+                    sefvolume = 1;
+                }
+                shootSound(sefvolume, prevSoundTime * 600);
+                hitSec = timer;
+
+                //hit.volume = sefvolume;
+                //hit.pause();
+                //hit.playFrom(0);
+            }
+        }
         //vx *= 0.9;
     }
 
@@ -661,8 +762,8 @@ function sanitize_size(values) {
         r: 0,
         l: 0
     };
-    var accelVal1Rest = 234;
-    var accelVal2Rest = 180;
+    var accelVal1Rest = 224;
+    var accelVal2Rest = 130;
 
 
     degreeR = ((values.r - accelVal1Rest) * 0.01);
