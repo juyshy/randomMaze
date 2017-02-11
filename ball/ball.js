@@ -12,12 +12,14 @@ var objects = [], materials = [];
 var prevTime = 0.001 * Date.now();
 var geometry;
 var line,
-    ball, ballWrappper, obj3d;
+    ball, ballWrappper, ballWrappper_helpers, obj3d;
 var ballSize = 75;
 var vx = 0,
     vz = 0,
     ax = 0,
     az = 0;
+var rotaAngle ;
+var bounce = -0.7;
 
 var lineDir, rotLineDir;
 init();
@@ -27,6 +29,9 @@ function onDocumentMouseMove(event) {
     mouseX = (event.clientX - windowHalfX);
     mouseY = (event.clientY - windowHalfY);
 }
+
+
+var left = -500, right = 500, top = -500, bottom = 500;
 
 function init() {
 
@@ -111,10 +116,13 @@ function init() {
     ball.position.z = 0;
 
     ballWrappper = new THREE.Object3D();
+    ballWrappper_helpers = new THREE.Object3D();
     objects.push(ball);
 
     line.add(ballWrappper);
     ballWrappper.add(ball);
+    ballWrappper.add(ballWrappper_helpers);
+
 
     var line_geometry2 = new THREE.Geometry();
     line_geometry2.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -124,15 +132,15 @@ function init() {
     lineDir = new THREE.LineSegments(line_geometry2, line_material2);
     rotLineDir = new THREE.LineSegments(line_geometry2, line_material3);
     rotLineDir.rotation.y = lineDir.rotation.y + Math.PI / 2;
-    // ballWrappper.add(lineDir);
-    //ballWrappper.add(rotLineDir);
+    ballWrappper_helpers.add(lineDir);
+    ballWrappper_helpers.add(rotLineDir);
     particleLight = new THREE.Mesh(new THREE.SphereGeometry(4, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
     scene.add(particleLight);
 
     obj3d = new THREE.Mesh(new THREE.SphereGeometry(4, 5, 5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
     obj3d.position.x = 0;
     obj3d.position.z = 100;
-    //ballWrappper.add(obj3d);
+    ballWrappper.add(obj3d);
 
     // Lights
 
@@ -230,30 +238,66 @@ function render() {
     camera.lookAt(scene.position);
 
     line.rotation.z += (mouseX * 0.0005 - line.rotation.z) * 0.02;
-    line.rotation.x += (mouseY * 0.0005 - line.rotation.x) * 0.02;
+    line.rotation.x -= (mouseY * 0.0005 + line.rotation.x) * 0.02;
     //console.log("line.rotation.z " + line.rotation.z);
-    var gravity = 9.8 * timedelta;
 
+
+    var gravity = 9.8 * timedelta;
     ax = gravity * Math.sin(line.rotation.z);
     az = gravity * Math.sin(line.rotation.x);
     vx += az; //line.rotation.z * mult ;
     vz += ax; //line.rotation.x * mult ;
 
     var angle = Math.atan2(vx, vz);
-    ballWrappper.rotation.y = angle + Math.PI;
+    ballWrappper_helpers.rotation.y = angle + Math.PI;
+    var rotaAxis = new THREE.Vector3();
+    rotaAxis.x = - Math.sin(ballWrappper_helpers.rotation.y);
+    rotaAxis.z = -Math.cos(ballWrappper_helpers.rotation.y);
 
     var speed = Math.sqrt(vx * vx + vz * vz);
     var friction = 1 - speed * 0.004;
     //var friction = 0.99;
-    vx *= friction;
-    vz *= friction;
-    speed = Math.sqrt(vx * vx + vz * vz);
-    var rotaspeed = speed / (2 * ballSize);
-    ball.rotation.z -= rotaspeed;
+    //vx *= friction;
+    //vz *= friction;
 
+    // ballWrappper.rotation.y = angle + Math.PI;
     ballWrappper.position.x -= vz;
     ballWrappper.position.z += vx;
 
+    if (ballWrappper.position.x + ballSize > right) {
+        ballWrappper.position.x = right - ballSize;
+        vx *= bounce;
+        vz *= 0.7;
+    } else if (ballWrappper.position.x - ballSize < left) {
+        ballWrappper.position.x = left + ballSize;
+        vx *= bounce;
+        vz *=  0.7;
+    }
+    if (ballWrappper.position.z + ballSize > bottom) {
+        ballWrappper.position.z = bottom - ballSize;
+        vz *= bounce;
+        vx *=  0.7;
+    } else if (ballWrappper.position.z - ballSize < top) {
+        ballWrappper.position.z = top + ballSize;
+        vz *= bounce;
+        vx *=  0.7;
+    }
+    speed = Math.sqrt(vx * vx + vz * vz);
+    var rotaspeed = speed / (2 * ballSize);
+    //ball.rotation.z -= rotaspeed;
+    rotaAxis.normalize();
+
+    rotaAngle += rotaspeed;
+    
+    var quaternion = new THREE.Quaternion();
+    quaternion.setFromAxisAngle( rotaAxis, rotaAngle );
+
+    //ball.setRotationFromQuaternion(quaternion)
+    obj3d.position.z = rotaAxis.z * 100;
+    obj3d.position.x = rotaAxis.x * 100;
+
+
     renderer.render(scene, camera);
+
 
 }
