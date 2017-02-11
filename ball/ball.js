@@ -163,10 +163,10 @@ function render() {
     //console.log(timer);
     var timedelta = timer - prevTime;
     prevTime = timer;
-    camera.lookAt(scene.position);
-
     line.rotation.z += (mouseX * 0.0005 - line.rotation.z) * 0.02;
     line.rotation.x -= (mouseY * 0.0005 + line.rotation.x) * 0.02;
+    
+    camera.lookAt(scene.position);
     //console.log("line.rotation.z " + line.rotation.z);
 
 

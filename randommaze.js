@@ -28,14 +28,21 @@ var n_steps,
     beginningPoint;
 
 var ball;
-
+var mouseX = 0, mouseY = 0;
 var renderer = null,
     scene = null,
     camera = null,
     //terra = null,
     animating = false;
-
+var prevTime = 0.001 * Date.now();
 //var kdobj;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var vx = 0,
+    vz = 0,
+    ax = 0,
+    az = 0;
+var rotaAngle;
 
 function setUpRender() {
 
@@ -231,7 +238,7 @@ function drawMaze() {
     /* 		this.mesh.position.x = -30;*/
     this.mesh.position.y = -20;
     this.mesh.scale.set(0.3, 0.3, 0.3);
-    this.mesh.rotation.y = Math.PI / 2;
+    //this.mesh.rotation.y = Math.PI / 2;
 
 }
 
@@ -376,10 +383,16 @@ function initMaze() {
     drawSaw();
     ball = Ball(5);
     ball.position.y = 5;
-    ball.position.x = - (mazeSize*gridDim/2) + gridDim / 2;
-    ball.position.z = (mazeSize*gridDim/2) - gridDim / 2;
+    ball.position.x = - (mazeSize * gridDim / 2) + gridDim / 2;
+    ball.position.z = (mazeSize * gridDim / 2) - gridDim / 2;
     mesh.add(ball);
 }
+function onDocumentMouseMove(event) {
+    mouseX = (event.clientX - windowHalfX);
+    mouseY = (event.clientY - windowHalfY);
+}
+
+
 $(function () {
 
     setUpRender();
@@ -395,12 +408,38 @@ $(function () {
         .click(function () {
             initMaze();
         });
+    document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 });
 
 
 function run() {
     // Render the scene
+    var timer = 0.001 * Date.now();
+    //console.log(timer);
+    var timedelta = timer - prevTime;
+    prevTime = timer;
+    mesh.rotation.z -= (mouseX * 0.0003 + mesh.rotation.z) * 0.02;
+    mesh.rotation.x += (mouseY * 0.0004 - mesh.rotation.x) * 0.02;
+
+
+    var gravity = 9.8 * timedelta;
+    ax = gravity * Math.sin(mesh.rotation.z);
+    az = gravity * Math.sin(mesh.rotation.x);
+    vx += az; //line.rotation.z * mult ;
+    vz += ax; //line.rotation.x * mult ;
+
+    var angle = Math.atan2(vx, vz);
+
+
+    var speed = Math.sqrt(vx * vx + vz * vz);
+    var friction = 1 - speed * 0.004;
+    friction = 0.98;
+    vx *= friction;
+    vz *= friction;
+    ball.position.x -= vz;
+    ball.position.z += vx;
+
     renderer.render(scene, camera);
 
     // Spin the terra for next frame
