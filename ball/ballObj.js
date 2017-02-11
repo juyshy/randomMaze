@@ -1,6 +1,6 @@
 var objects = [], materials = [];
 var ballSize = 75;
-function Ball(_ballSize = 75){
+function Ball(_ballSize = 75, materialIndx = 5){
     ballSize = _ballSize;
    var texture = new THREE.Texture(generateTexture());
     texture.needsUpdate = true;
@@ -46,7 +46,7 @@ function Ball(_ballSize = 75){
     //for ( var i = 0, l = materials.length; i < l; i ++ ) {
 
 
-    ball = new THREE.Mesh(geometry, materials[5]);
+    ball = new THREE.Mesh(geometry, materials[materialIndx]);
 
     ball.position.x = 0;
     ball.position.z = 0;

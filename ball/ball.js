@@ -18,7 +18,7 @@ var vx = 0,
     vz = 0,
     ax = 0,
     az = 0;
-var rotaAngle ;
+var rotaAngle;
 var bounce = -0.7;
 
 var lineDir, rotLineDir;
@@ -31,9 +31,9 @@ function onDocumentMouseMove(event) {
 }
 
 
-var left = -500, right = 500, top = -500, bottom = 500;
+var left = -500, right = 500, topEdge = -500, bottom = 500;
 
- 
+
 
 function init() {
 
@@ -68,8 +68,8 @@ function init() {
 
     // Materials
 
-    ball = Ball();
- 
+    ball = Ball(75, 0);
+
 
     ballWrappper = new THREE.Object3D();
     ballWrappper_helpers = new THREE.Object3D();
@@ -165,7 +165,7 @@ function render() {
     prevTime = timer;
     line.rotation.z += (mouseX * 0.0005 - line.rotation.z) * 0.02;
     line.rotation.x -= (mouseY * 0.0005 + line.rotation.x) * 0.02;
-    
+
     camera.lookAt(scene.position);
     //console.log("line.rotation.z " + line.rotation.z);
 
@@ -173,24 +173,24 @@ function render() {
     var gravity = 9.8 * timedelta;
     ax = gravity * Math.sin(line.rotation.z);
     az = gravity * Math.sin(line.rotation.x);
-    vx += az; //line.rotation.z * mult ;
-    vz += ax; //line.rotation.x * mult ;
+    vx += ax; //line.rotation.z * mult ;
+    vz += az; //line.rotation.x * mult ;
 
-    var angle = Math.atan2(vx, vz);
+    var angle = Math.atan2(vz, vx);
     ballWrappper_helpers.rotation.y = angle + Math.PI;
     var rotaAxis = new THREE.Vector3();
-    rotaAxis.x = - Math.sin(ballWrappper_helpers.rotation.y);
-    rotaAxis.z = -Math.cos(ballWrappper_helpers.rotation.y);
+    rotaAxis.x =  Math.sin(ballWrappper_helpers.rotation.y);
+    rotaAxis.z =  Math.cos(ballWrappper_helpers.rotation.y);
 
     var speed = Math.sqrt(vx * vx + vz * vz);
-    var friction = 1 - speed * 0.004;
+    // var friction = 1 - speed * 0.004;
     //var friction = 0.99;
     //vx *= friction;
     //vz *= friction;
 
     // ballWrappper.rotation.y = angle + Math.PI;
-    ballWrappper.position.x -= vz;
-    ballWrappper.position.z += vx;
+    ballWrappper.position.x -= vx;
+    ballWrappper.position.z += vz;
 
     if (ballWrappper.position.x + ballSize > right) {
         ballWrappper.position.x = right - ballSize;
@@ -199,16 +199,17 @@ function render() {
     } else if (ballWrappper.position.x - ballSize < left) {
         ballWrappper.position.x = left + ballSize;
         vx *= bounce;
-        vz *=  0.7;
+        vz *= 0.7;
     }
     if (ballWrappper.position.z + ballSize > bottom) {
         ballWrappper.position.z = bottom - ballSize;
         vz *= bounce;
-        vx *=  0.7;
-    } else if (ballWrappper.position.z - ballSize < top) {
-        ballWrappper.position.z = top + ballSize;
+        vx *= 0.7;
+    }
+    if (ballWrappper.position.z - ballSize < topEdge) {
+        ballWrappper.position.z = topEdge + ballSize;
         vz *= bounce;
-        vx *=  0.7;
+        vx *= 0.7;
     }
     speed = Math.sqrt(vx * vx + vz * vz);
     var rotaspeed = speed / (2 * ballSize);
@@ -216,11 +217,12 @@ function render() {
     rotaAxis.normalize();
 
     rotaAngle += rotaspeed;
-    
-    var quaternion = new THREE.Quaternion();
-    quaternion.setFromAxisAngle( rotaAxis, rotaAngle );
 
-    //ball.setRotationFromQuaternion(quaternion)
+    //var quaternion = new THREE.Quaternion();
+    //  quaternion.setFromAxisAngle( rotaAxis, rotaAngle );
+
+    //    ball.setRotationFromQuaternion(quaternion)
+    //ball.rotateOnAxis(rotaAxis, -rotaspeed)
     obj3d.position.z = rotaAxis.z * 100;
     obj3d.position.x = rotaAxis.x * 100;
 
