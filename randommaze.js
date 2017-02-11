@@ -10,11 +10,13 @@ seeking random empty points, beside the  path
 */
 
 /*jslint browser: true*/
-/*global alert, THREE, container, ColorKeywords,geometry*/
+/*global $, alert, THREE, container, ColorKeywords,geometry,Ball*/
+/* eslint-disable   no-console */
 
 var mazeSize = 10, gridDim = 30;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
+var ballSize = 5;
 var startX = 0,
     startY = 0,
     s = {},
@@ -27,12 +29,11 @@ var rightEdge = mazeSize * gridDim / 2,
     topEdge = mazeSize * gridDim / 2;
 var height = 15;
 var n_steps,
-    freePoints,
     beginningPoint;
 var boudaries = { xLeft: 0, xRight: mazeSize, yTop: 0, yBottom: mazeSize };
 var ball;
 var mouseX = 0, mouseY = 0;
-var renderer = null,
+var mesh, renderer = null,
     scene = null,
     camera = null,
     //terra = null,
@@ -45,12 +46,12 @@ var vx = 0,
     vz = 0,
     ax = 0,
     az = 0;
-var rotaAngle;
+//var rotaAngle;
 var allFreePoints = [];
 var prevSec = 0;
 var bounce = -0.7;
-var rightBoundary, leftBoundary, topBoundary, bottomBoundary;
-var lineEdge, lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
+//var rightBoundary, leftBoundary, topBoundary, bottomBoundary;
+var   lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
 
 function setUpRender() {
     var container = document.getElementById("container");
@@ -131,11 +132,11 @@ function possibleNewPoints(x, y, freePoints) {
 
 function lineInBetween(point1, point2) {
 
-    var foundPoints = 0;
+ 
     /* 	var pointtiedot= haeSubPath(point1); */
     for (var j = 0; j < paths.length; j++) {
         var subpath = paths[j];
-        foundPoints = 0;
+        var foundPoints = 0;
         for (var i = 0; i < subpath.length; i++) {
             if (i < subpath.length - 1 && (point1.x == subpath[i].x && point1.y == subpath[i].y) && (point2.x == subpath[i + 1].x && point2.y == subpath[i + 1].y)) {
                 foundPoints += 1;
@@ -336,7 +337,7 @@ function drawSaw() {
 
     var freeInit = freeInTheBeginning();
     freePoints = freeInit;
-    var siteGroups = [];
+    //var siteGroups = [];
 
     removeFromFree(beginningPoint);
 
@@ -373,24 +374,10 @@ function drawSaw() {
     drawMaze();
 }
 
-
-function luo3DObjekti() {
-
-    this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
-    this.geometry = new THREE.Geometry();
-    this.geometry.vertices.push(new THREE.Vector3(-1, 0, 0));
-    this.geometry.vertices.push(new THREE.Vector3(1, 0, 0));
-    this.geometry.vertices.push(new THREE.Vector3(0, 1, 0));
-    this.geometry.vertices.push(new THREE.Vector3(3, 0, 0));
-
-    this.mesh = new THREE.Line(this.geometry, this.material, THREE.LinePieces);
-
-    scene.add(this.mesh);
-}
-
+ 
 function initMaze() {
     drawSaw();
-    ball = Ball(5);
+    ball = Ball(ballSize);
     ball.position.y = 5;
     ball.position.x = - (mazeSize * gridDim / 2) + gridDim / 2;
     ball.position.z = (mazeSize * gridDim / 2) - gridDim / 2;
@@ -452,7 +439,7 @@ $(function () {
         .click(function () {
             initMaze();
         });
-    document.addEventListener('mousemove', onDocumentMouseMove, false);
+    document.addEventListener("mousemove", onDocumentMouseMove, false);
 
 });
 
@@ -522,7 +509,7 @@ function run() {
             neighbourGridPositions.forEach(function (element) {
 
                 var passage = lineInBetween(gridPos, element);
-                gridPosBoundaries.push({ "passage": passage, "neighbour": element })
+                gridPosBoundaries.push({ "passage": passage, "neighbour": element });
             });
             console.log(gridPos, neighbourGridPositions);
             console.log(gridPosBoundaries);
@@ -545,7 +532,7 @@ function run() {
     az = gravity * Math.sin(mesh.rotation.x);
     vx += ax;
     vz += az;
-    var angle = Math.atan2(vx, vz);
+    //var angle = Math.atan2(vx, vz);
 
     var speed = Math.sqrt(vx * vx + vz * vz);
     var friction = 1 - speed * 0.004;
