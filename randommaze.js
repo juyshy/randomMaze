@@ -21,12 +21,15 @@ var mazeSize = 20,
     freePoints = [],
     paths = [],
     colors = [];
+var rightEdge = mazeSize * gridDim / 2,
+    leftEdge = -mazeSize * gridDim / 2,
+    bottomEdge = mazeSize * gridDim / 2,
+    topEdge = -mazeSize * gridDim / 2;
 var height = 15;
 var n_steps,
-    boudaries,
     freePoints,
     beginningPoint;
-
+var boudaries = { xLeft: 0, xRight: mazeSize, yTop: 0, yBottom: mazeSize };
 var ball;
 var mouseX = 0, mouseY = 0;
 var renderer = null,
@@ -43,6 +46,10 @@ var vx = 0,
     ax = 0,
     az = 0;
 var rotaAngle;
+var allFreePoints = [];
+var prevSec = 0;
+var bounce = -0.7;
+
 
 function setUpRender() {
 
@@ -107,16 +114,17 @@ function isFree(x, y, freePoints) {
     return valid;
 }
 
+
 function possibleNewPoints(x, y, freePoints) {
     var possiblePoints = [];
     var right = x + 1; // step East
-    if (isFree(right, y, freePoints)) possiblePoints.push({ x: right, y: y });
+    if (isFree(right, y, freePoints)) possiblePoints.push({ x: right, y: y, "dir": "right" });
     var down = y + 1; // step North
-    if (isFree(x, down, freePoints)) possiblePoints.push({ x: x, y: down });
+    if (isFree(x, down, freePoints)) possiblePoints.push({ x: x, y: down, "dir": "down" });
     var left = x - 1; // step West
-    if (isFree(left, y, freePoints)) possiblePoints.push({ x: left, y: y });
+    if (isFree(left, y, freePoints)) possiblePoints.push({ x: left, y: y, "dir": "left" });
     var up = y - 1; // step South
-    if (isFree(x, up, freePoints)) possiblePoints.push({ x: x, y: up });
+    if (isFree(x, up, freePoints)) possiblePoints.push({ x: x, y: up, "dir": "up" });
     return possiblePoints;
 }
 
@@ -307,6 +315,7 @@ function onList(beginningPoint, branchingPoints) {
     return foundOnList;
 }
 
+
 function drawSaw() {
 
     n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
@@ -398,7 +407,7 @@ $(function () {
     setUpRender();
     setCamera();
     letThereBeLight();
-
+    allFreePoints = freeInTheBeginning();
     initMaze();
 
     addMouseHandler();
@@ -422,12 +431,36 @@ function run() {
     mesh.rotation.z -= (mouseX * 0.0003 + mesh.rotation.z) * 0.02;
     mesh.rotation.x += (mouseY * 0.0004 - mesh.rotation.x) * 0.02;
 
+    var secs = Math.round(timer);
+    var gridPos = { x: 0, y: 0 };
+    gridPos.x = Math.round(((ball.position.x + (mazeSize * gridDim / 2)) / (gridDim / 2) - 1) / 2);
+    gridPos.y = - Math.round(((ball.position.z - (mazeSize * gridDim / 2)) / (gridDim / 2) - 1) / 2) - 1;
+    //ball.position.z = (mazeSize * gridDim / 2) - gridDim / 2;
+    var neighbourGridPositions = possibleNewPoints(gridPos.x, gridPos.y, allFreePoints);
+    var gridPosBoundaries = [];
 
+    neighbourGridPositions.forEach(function (element) {
+        var passage = lineInBetween(gridPos, element);
+        gridPosBoundaries.push({ "passage": passage, "neighbour": element })
+    });
+
+    if (prevSec != secs) {
+        console.log(ball.position);
+        console.log(gridPos, neighbourGridPositions);
+
+        console.log(gridPosBoundaries);
+
+
+    }
+    prevSec = secs;
+    if (timedelta > 1) {
+        timedelta = 0.015;
+    }
     var gravity = 9.8 * timedelta;
     ax = gravity * Math.sin(mesh.rotation.z);
     az = gravity * Math.sin(mesh.rotation.x);
-    vx += az; //line.rotation.z * mult ;
-    vz += ax; //line.rotation.x * mult ;
+    vx += ax; //line.rotation.z * mult ;
+    vz += az; //line.rotation.x * mult ;
 
     var angle = Math.atan2(vx, vz);
 
@@ -437,8 +470,27 @@ function run() {
     friction = 0.98;
     vx *= friction;
     vz *= friction;
-    ball.position.x -= vz;
-    ball.position.z += vx;
+    ball.position.x -= vx;
+    ball.position.z += vz;
+
+    if (ball.position.x + ballSize > rightEdge) {
+        ball.position.x = rightEdge - ballSize;
+        vx *= bounce;
+        vz *= 0.9;
+    } else if (ball.position.x - ballSize < leftEdge) {
+        ball.position.x = leftEdge + ballSize;
+        vx *= bounce;
+        vz *= 0.9;
+    }
+    if (ball.position.z + ballSize > bottomEdge) {
+        ball.position.z = bottomEdge - ballSize;
+        vz *= bounce;
+        vx *= 0.9;
+    } else if (ball.position.z - ballSize < topEdge) {
+        ball.position.z = topEdge + ballSize;
+        vz *= bounce;
+        vx *= 0.9;
+    }
 
     renderer.render(scene, camera);
 
