@@ -13,17 +13,21 @@ seeking random empty points, beside the  path
 /*jslint browser: true*/
 /*global alert, THREE, container, ColorKeywords,geometry*/
 
-var mazeSize = 20;
-var n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
-var boudaries = { xLeft: 0, xRight: mazeSize, yTop: 0, yBottom: mazeSize };
-var startX = 0;
-var startY = 0;
-var gridDim = 20;
-var freePoints = [];
-var paths = [];
-var colors = [];
-var beginningPoint = { x: 0, y: 0 };
-var s = {};
+var mazeSize = 20,
+    startX = 0,
+    startY = 0,
+    gridDim = 20,
+    s = {},
+    freePoints = [],
+    paths = [],
+    colors = [];
+var height = 15;
+var n_steps,
+    boudaries,
+    freePoints,
+    beginningPoint;
+
+var ball;
 
 var renderer = null,
     scene = null,
@@ -45,14 +49,15 @@ function setUpRender() {
 
 function setCamera() {
     camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
-    camera.position.set(0, 30, 90);
+    camera.position.set(-2, 130, 80);
     camera.lookAt(new THREE.Vector3(0, -10, 0));
 }
 
 function letThereBeLight() {
     var light = new THREE.DirectionalLight(0xffffff, 1.5);
-    light.position.set(0, 0, 1);
+    light.position.set(0, 5, 60);
     scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff));
 }
 
 
@@ -147,32 +152,32 @@ function drawMaze() {
     this.material = new THREE.MeshPhongMaterial({ color: 0xaa0fff, specular: 0xaaaacc, side: THREE.DoubleSide });   // , ambient : 0x9999ff
 
     this.geometry = new THREE.Geometry();
-    var korkeus = 5;
+
     this.geometry.vertices.push(new THREE.Vector3(0, 0, 0));
     this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, 0));
-    this.geometry.vertices.push(new THREE.Vector3(0, 0, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(0, 0, height));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, height));
     geometry.faces.push(new THREE.Face3(0, 1, 2));
     geometry.faces.push(new THREE.Face3(1, 2, 3));
 
     this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, 0));
     this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, (mazeSize - 1) * gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, (mazeSize - 1) * gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, 0, height));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, (mazeSize - 1) * gridDim, height));
     geometry.faces.push(new THREE.Face3(4 + 0, 4 + 1, 4 + 2));
     geometry.faces.push(new THREE.Face3(4 + 1, 4 + 2, 4 + 3));
 
     this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, mazeSize * gridDim, 0));
     this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, mazeSize * gridDim, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(mazeSize * gridDim, mazeSize * gridDim, height));
+    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, height));
     geometry.faces.push(new THREE.Face3(8 + 0, 8 + 1, 8 + 2));
     geometry.faces.push(new THREE.Face3(8 + 1, 8 + 2, 8 + 3));
 
     this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, 0));
     this.geometry.vertices.push(new THREE.Vector3(0, gridDim, 0));
-    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, korkeus));
-    this.geometry.vertices.push(new THREE.Vector3(0, gridDim, korkeus));
+    this.geometry.vertices.push(new THREE.Vector3(0, mazeSize * gridDim, height));
+    this.geometry.vertices.push(new THREE.Vector3(0, gridDim, height));
 
     geometry.faces.push(new THREE.Face3(12 + 0, 12 + 1, 12 + 2));
     geometry.faces.push(new THREE.Face3(12 + 1, 12 + 2, 12 + 3));
@@ -190,8 +195,8 @@ function drawMaze() {
                 segments += 1;
                 this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (row + 1) * gridDim, 0));
                 this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (row + 1) * gridDim, 0));
-                this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (row + 1) * gridDim, korkeus));
-                this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (row + 1) * gridDim, korkeus));
+                this.geometry.vertices.push(new THREE.Vector3(i * gridDim, (row + 1) * gridDim, height));
+                this.geometry.vertices.push(new THREE.Vector3((i + 1) * gridDim, (row + 1) * gridDim, height));
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 0, segments * 4 + 12 + 1, segments * 4 + 12 + 2));
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 1, segments * 4 + 12 + 2, segments * 4 + 12 + 3));
 
@@ -205,8 +210,8 @@ function drawMaze() {
                 segments += 1;
                 this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, i * gridDim, 0));
                 this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, (i + 1) * gridDim, 0));
-                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, i * gridDim, korkeus));
-                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, (i + 1) * gridDim, korkeus));
+                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, i * gridDim, height));
+                this.geometry.vertices.push(new THREE.Vector3((row + 1) * gridDim, (i + 1) * gridDim, height));
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 0, segments * 4 + 12 + 1, segments * 4 + 12 + 2));
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 1, segments * 4 + 12 + 2, segments * 4 + 12 + 3));
 
@@ -225,8 +230,8 @@ function drawMaze() {
     scene.add(this.mesh);
     /* 		this.mesh.position.x = -30;*/
     this.mesh.position.y = -20;
-    this.mesh.scale.set(0.15, 0.15, 0.15);
-    this.mesh.rotation.y = Math.PI / 4;
+    this.mesh.scale.set(0.3, 0.3, 0.3);
+    this.mesh.rotation.y = Math.PI / 2;
 
 }
 
@@ -297,6 +302,22 @@ function onList(beginningPoint, branchingPoints) {
 
 function drawSaw() {
 
+    n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
+    boudaries = { xLeft: 0, xRight: mazeSize, yTop: 0, yBottom: mazeSize };
+    startX = 0;
+    startY = 0;
+
+    freePoints = [];
+    paths = [];
+    colors = [];
+    beginningPoint = { x: 0, y: 0 };
+    s = {};
+
+    scene.children;
+    if (scene.children.length > 2) {
+        scene.remove(scene.children[2]);
+    }
+
     var freeInit = freeInTheBeginning();
     freePoints = freeInit;
     var siteGroups = [];
@@ -351,16 +372,31 @@ function luo3DObjekti() {
     scene.add(this.mesh);
 }
 
-window.onload = function () {
+function initMaze() {
+    drawSaw();
+    ball = Ball(5);
+    ball.position.y = 5;
+    ball.position.x = - (mazeSize*gridDim/2) + gridDim / 2;
+    ball.position.z = (mazeSize*gridDim/2) - gridDim / 2;
+    mesh.add(ball);
+}
+$(function () {
 
     setUpRender();
     setCamera();
     letThereBeLight();
-    drawSaw();
+
+    initMaze();
+
     addMouseHandler();
     run();
 
-};
+    $("button#reload")
+        .click(function () {
+            initMaze();
+        });
+
+});
 
 
 function run() {
@@ -369,7 +405,7 @@ function run() {
 
     // Spin the terra for next frame
     if (animating) {
-        mesh.rotation.y -= 0.01;
+        // mesh.rotation.y -= 0.01;
     }
 
     // Ask for another frame
