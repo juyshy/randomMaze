@@ -1,21 +1,25 @@
 var fs = require("fs");
 var url = require("url");
+var stdio = require('stdio');
 
 
-var argumentsAr = new Array();
-var args = process.argv.slice(2);
-args.forEach(function (val, index, array) {
-	//console.log(index + ': ' + val);
-	argumentsAr.push({ "index": index, "val": val });
+var $parameterData = { "boardActive": 0, "logging": 0 };
+
+var ops = stdio.getopt({
+	'boardactive': { key: 'b', description: 'board active or not y/n' },
+	'logging': { key: 'l', description: 'Activate logging' },
 });
-var $boardActive = false;
-var $data1 = {"boardActive" : 0};
-if (argumentsAr[0].val == "board" && argumentsAr[1].val == 1) {
-	 $boardActive = true;
-	 $data1 = {"boardActive" : 1};
+
+//console.dir(ops);
+if (ops.boardactive != undefined) {
+	$parameterData .boardActive = ops.boardactive ;
 }
-console.log("boardActive " + $boardActive);
-//process.exit();
+if (ops.logging != undefined) {
+	$parameterData.logging = ops.logging ;
+}
+console.dir($parameterData);
+//process.exit(); 
+
 
 /* Create the server in the port 9000 */
 var http = require("http").createServer(function (req, res) {
@@ -53,6 +57,6 @@ var io = require("socket.io").listen(http);
 
 io.sockets.on("connection", function (socket) {
 	// On a new Socket.io connection, load the data provider we want. For now, just Arduino.
-	var $provider = require('./providers/arduino.js').init(socket, $data1);
+	var $provider = require('./providers/arduino.js').init(socket, $parameterData);
 });
 
