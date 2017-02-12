@@ -16,10 +16,11 @@ seeking random empty points, beside the  path
 var mazeSize = 20, gridDim = 20;
 var boardActive = false;
 var soundOn = false;
-var steppedMouse = false;
-var gridBoundariesBebugActive = false;
+var steppedMouse = true;
+var gridBoundariesBebugActive = true;
 var debuggingAcive = false;
 var ballSize = 5;
+var lookatVec = new THREE.Vector3(0, -10, 0);
 var endPoint = { x: mazeSize - 1, y: mazeSize - 1 };
 var startX = 0,
     startY = 0,
@@ -55,7 +56,7 @@ var allFreePoints = [];
 var prevSec = 0;
 var bounce = -0.7;
 //var rightBoundary, leftBoundary, topBoundary, bottomBoundary;
-var lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
+var lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown, obj3d, obj3ds;
 var hit;
 var $lastR = 0;
 var $lastL = 0;
@@ -86,8 +87,8 @@ function setUpRender() {
 
 function setCamera() {
     camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
-    camera.position.set(-7, 140, 80);
-    camera.lookAt(new THREE.Vector3(0, -10, 0));
+    camera.position.set(0, 30, 220);
+    camera.lookAt(lookatVec);
 }
 
 function letThereBeLight() {
@@ -445,6 +446,18 @@ function onDocumentMouseMove(event) {
 
 function gridBoundriesDebug() {
 
+    obj3ds = [];
+    for (var i = 0; i < 3; i++) {
+        obj3d = new THREE.Mesh(new THREE.SphereGeometry(2, 5, 5),
+            new THREE.MeshBasicMaterial({ color: 0xccffcc }));
+        obj3d.position.x = 0;
+        obj3d.position.z = 0;
+        obj3d.position.y = height;
+        obj3d.visible = false;
+        mesh.add(obj3d);
+        obj3ds.push(obj3d);
+    }
+
     var line_geometry2 = new THREE.Geometry();
     line_geometry2.vertices.push(new THREE.Vector3(0, 0, 0));
     line_geometry2.vertices.push(new THREE.Vector3(gridDim, 0, 0));
@@ -560,7 +573,11 @@ function run() {
     //ball.position.z = (mazeSize * gridDim / 2) - gridDim / 2;
     var neighbourGridPositions = possibleNewPoints(gridPos.x, gridPos.y, allFreePoints);
 
-
+    var gridPosBoundaries = {};
+    gridPosBoundaries.right = (gridPos.x + 1) * gridDim - mazeSize * gridDim / 2;
+    gridPosBoundaries.left = (gridPos.x) * gridDim - mazeSize * gridDim / 2;
+    gridPosBoundaries.down = - (gridPos.y + 1) * gridDim + mazeSize * gridDim / 2;
+    gridPosBoundaries.up = - (gridPos.y) * gridDim + mazeSize * gridDim / 2;
     var boundariesActive = { "right": true, "down": true, "left": true, "up": true };
     var openCorners = [];
     var boundaries = { right: rightEdge, left: leftEdge, down: bottomEdge, up: topEdge };
@@ -568,36 +585,43 @@ function run() {
         //    neighbourGridPositions.forEach(function (element) {
         element = neighbourGridPositions[posIndx];
         var passage = lineInBetween(gridPos, element);
-
+        var nextIdx = posIndx + 1;
+        if (nextIdx > neighbourGridPositions.length - 1) {
+            nextIdx = 0;
+        }
         if (element.dir == "right" && passage) {
             boundariesActive.right = false;
-            // if (lineInBetween(gridPos, neighbourGridPositions[1])) {
-            //   openCorners.push({ indx: 0, inBetween: "right, down" });
-            //  }
+            if (neighbourGridPositions[nextIdx].dir == "down"
+                && lineInBetween(gridPos, neighbourGridPositions[nextIdx])) {
+                openCorners.push({ indx: 0, inBetween: "right, down" });
+            }
         } else if (element.dir == "right" && !passage) {
             boundaries.right = (element.x) * gridDim - mazeSize * gridDim / 2;
         }
         if (element.dir == "down" && passage) {
             boundariesActive.down = false;
-            // if (lineInBetween(gridPos, neighbourGridPositions[2])) {
-            //    openCorners.push({ indx: 1, inBetween: "down, left" });
-            // }
+            if (neighbourGridPositions[nextIdx].dir == "left"
+                && lineInBetween(gridPos, neighbourGridPositions[nextIdx])) {
+                openCorners.push({ indx: 1, inBetween: "down, left" });
+            }
         } else if (element.dir == "down" && !passage) {
             boundaries.down = - (element.y) * gridDim + mazeSize * gridDim / 2;
         }
         if (element.dir == "left" && passage) {
             boundariesActive.left = false;
-            // if (lineInBetween(gridPos, neighbourGridPositions[2])) {
-            //    openCorners.push({ indx: 2, inBetween: "left,up" });
-            // }
+            if (neighbourGridPositions[nextIdx].dir == "up"
+                && lineInBetween(gridPos, neighbourGridPositions[nextIdx])) {
+                openCorners.push({ indx: 2, inBetween: "left,up" });
+            }
         } else if (element.dir == "left" && !passage) {
             boundaries.left = (element.x + 1) * gridDim - mazeSize * gridDim / 2;
         }
         if (element.dir == "up" && passage) {
             boundariesActive.up = false;
-            // if (lineInBetween(gridPos, neighbourGridPositions[3])) {
-            //    openCorners.push({ indx: 2, inBetween: "left,up" });
-            // }
+            if (neighbourGridPositions[nextIdx].dir == "right"
+                && lineInBetween(gridPos, neighbourGridPositions[nextIdx])) {
+                openCorners.push({ indx: 3, inBetween: "up,right" });
+            }
         } else if (element.dir == "up" && !passage) {
             boundaries.up = - (element.y + 1) * gridDim + mazeSize * gridDim / 2;
         }
@@ -608,14 +632,43 @@ function run() {
     }//);
 
 
+    var cornerPointCoords = [
+        { x: gridPosBoundaries.right, z: gridPosBoundaries.down },
+        { x: gridPosBoundaries.left, z: gridPosBoundaries.down },
+        { x: gridPosBoundaries.left, z: gridPosBoundaries.up },
+        { x: gridPosBoundaries.right, z: gridPosBoundaries.up }
+    ];
+
+    openCorners.forEach(function (element) {
+        element.cornerPoint = cornerPointCoords[element.indx];
+    });
+
     if (gridBoundariesBebugActive) {
-        lineEdgeL.position.x = boundaries.left;
-        lineEdgeL.position.z = boundaries.up + gridDim;
-        lineEdgeR.position.x = boundaries.right;
-        // lineEdgeR.position.z = boundaries.bottom;
-        lineEdgeTop.position.z = boundaries.up;
-        lineEdgeDown.position.z = boundaries.down;
+        lineEdgeL.position.x = gridPosBoundaries.left;
+        lineEdgeL.position.z = gridPosBoundaries.down;
+        lineEdgeR.position.x = gridPosBoundaries.right;
+        lineEdgeR.position.z = gridPosBoundaries.down;
+        lineEdgeTop.position.z = gridPosBoundaries.up;
+        lineEdgeTop.position.x = gridPosBoundaries.left;
+        lineEdgeDown.position.z = gridPosBoundaries.down;
+        lineEdgeDown.position.x = gridPosBoundaries.left;
+        var debugObCount = 0;
+        obj3ds.forEach(function (obj3dElem) {
+            obj3dElem.visible = false;
+        });
+        if (openCorners.length > 0) {
+            openCorners.forEach(function (element) {
+                obj3ds[debugObCount].position.x = element.cornerPoint.x;
+                obj3ds[debugObCount].position.z = element.cornerPoint.z;
+                obj3ds[debugObCount].visible = true;
+                debugObCount++;
+            });
+        }
     }
+
+
+
+
     // lineEdge.position.z = boundaries.down;
     if (debuggingAcive) {
         if (prevSec != secs) {
@@ -643,7 +696,7 @@ function run() {
         timedelta = 0.015;
     }
     var gravity = 9.8 * timedelta;
-    ax = gravity * Math.sin(mesh.rotation.z);
+    ax = -gravity * Math.sin(mesh.rotation.z);
     az = gravity * Math.sin(mesh.rotation.x);
     vx += ax;
     vz += az;
@@ -654,11 +707,89 @@ function run() {
     friction = 0.98;
     vx *= friction;
     vz *= friction;
-    ball.position.x -= vx;
+    ball.position.x += vx;
     ball.position.z += vz;
+
+    var ballWPos = ball.getWorldPosition();
+    lookatVec.x += (ballWPos.x - lookatVec.x) * 0.04;
+    lookatVec.z += (ballWPos.z - lookatVec.z) * 0.04;
+
+    camera.lookAt(lookatVec);
+
+    camera.position.set(lookatVec.x, 30, lookatVec.z + 5);
 
     var minumumSoundPause = 0.7;
     var sefvolume = 1;
+    var angle = Math.atan2(vx, vz);
+    console.log(angle * (180 / Math.PI));
+
+    openCorners.forEach(function (element) {
+        var xdist = element.cornerPoint.x - ball.position.x;
+        var zdist = element.cornerPoint.z - ball.position.z;
+        var dist = Math.sqrt(xdist * xdist + zdist * zdist);
+        if (dist < ballSize) {
+            var distangle = Math.atan2(xdist, zdist);
+            var distangleDeg2 = distangle * (180 / Math.PI);
+            if (element.indx == 0) { //angle >= 0 && 
+                if (angle < distangle) {
+                    ball.position.z = element.cornerPoint.z + ballSize;
+                    vz *= bounce;
+                } else {
+                    ball.position.x = element.cornerPoint.x - ballSize;
+                    vx *= bounce;
+                }
+            } else if (element.indx == 1) {
+                if (angle < distangle) {
+
+
+                    ball.position.x = element.cornerPoint.x + ballSize;
+                    vx *= bounce;
+                } else {
+
+                    ball.position.z = element.cornerPoint.z + ballSize;
+                    vz *= bounce;
+                }
+            } else if (element.indx == 2) {
+                if (angle < distangle) {
+                    ball.position.z = element.cornerPoint.z - ballSize;
+                    vz *= bounce;
+                } else {
+                    ball.position.x = element.cornerPoint.x + ballSize;
+                    vx *= bounce;
+
+
+                }
+            } else if (element.indx == 3) {
+                if (angle < distangle) {
+                    ball.position.x = element.cornerPoint.x - ballSize;
+                    vx *= bounce;
+                } else {
+
+                    ball.position.z = element.cornerPoint.z - ballSize;
+                    vz *= bounce;
+
+                }
+            }
+
+            if (soundOn) {
+                var prevSoundTime = timer - hitSec;
+                if (prevSoundTime > minumumSoundPause) {
+                    sefvolume = vx * prevSoundTime * 0.4;
+                    if (sefvolume > 1) {
+                        sefvolume = 1;
+                    }
+
+                    shootSound(sefvolume, prevSoundTime * 400);
+
+                    //hit.volume = sefvolume;
+                    //hit.pause();
+                    //hit.playFrom(0);
+                    hitSec = timer;
+                }
+            }
+        }
+    });
+
     if (boundariesActive.right && ball.position.x + ballSize > boundaries.right) {
         ball.position.x = boundaries.right - ballSize;
         vx *= bounce;
