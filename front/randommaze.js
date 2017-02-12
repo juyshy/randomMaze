@@ -89,13 +89,13 @@ function setUpRender() {
 function setCamera() {
     camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
     if (closeUpCamera) {
-        
+
         camera.position.set(0, 30, 220);
     } else {
         camera.position.set(-7, 140, 80);
         camera.lookAt(lookatVec);
     }
-   
+
 }
 
 function letThereBeLight() {
@@ -511,8 +511,17 @@ function initSound() {
         console.log(err);
     }
 }
-$(function () {
+function createMesh(geom, imageFile) {
+    var texture = THREE.ImageUtils.loadTexture("images/" + imageFile)
+    var mat = new THREE.MeshPhongMaterial();
+    mat.map = texture;
 
+    var mesh = new THREE.Mesh(geom, mat);
+    return mesh;
+}
+
+var flag;
+$(function () {
 
     initSound();
     initStats();
@@ -521,6 +530,25 @@ $(function () {
     letThereBeLight();
     allFreePoints = freeInTheBeginning();
     initMaze();
+
+
+    var imageFile = "checkered.jpg";
+    var flagSize = 50;
+    flag = new THREE.Object3D();
+    var geom = new THREE.PlaneGeometry(flagSize, flagSize * 3 / 5);
+    var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    var cylinder = new THREE.Mesh(geometry, material);
+    var flagFlag = createMesh(geom, imageFile);
+    flagFlag.position.y = height * 3;
+    flagFlag.position.x = flagSize / 2;
+    flag.add(flagFlag)
+    flag.add(cylinder)
+    flag.position.z = - (mazeSize * gridDim / 2) + gridDim / 2;
+    var dirToFlag = new THREE.Vector3(0, 1, 0);
+
+
+
+    mesh.add(flag);
 
     if (gridBoundariesBebugActive) {
         gridBoundriesDebug();
@@ -716,7 +744,7 @@ function run() {
     vz *= friction;
     ball.position.x += vx;
     ball.position.z += vz;
-
+    flag.rotation.setFromRotationMatrix(camera.matrix);
     if (closeUpCamera) {
         var ballWPos = ball.getWorldPosition();
         lookatVec.x += (ballWPos.x - lookatVec.x) * 0.04;
@@ -967,7 +995,7 @@ try {
 function process_data(data) {
 
     if (data.indexOf("boardActive:") != -1) {
-       // console.log(data);
+        // console.log(data);
         var boardActiveParamsArray = data.split(':');
         if (boardActiveParamsArray[1] == '1' || boardActiveParamsArray[1] == 'true') {
             boardActive = true;
