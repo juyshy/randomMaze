@@ -13,12 +13,13 @@ seeking random empty points, beside the  path
 /*global $, alert, THREE, container, ColorKeywords,geometry,Ball*/
 /* eslint-disable   no-console */
 
-var mazeSize = 15, gridDim = 25;
+var mazeSize = 20, gridDim = 20;
 var boardActive = false;
 var soundOn = false;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
 var ballSize = 5;
+var endPoint = { x: mazeSize - 1, y: mazeSize - 1 };
 var startX = 0,
     startY = 0,
     s = {},
@@ -321,7 +322,18 @@ function onList(beginningPoint, branchingPoints) {
     return foundOnList;
 }
 
+function listIndex(beginningPoint, branchingPoints) {
+    var foundOnList = false;
+    for (var i = 0; i < branchingPoints.length; i++) {
+        if (beginningPoint.x == branchingPoints[i].x && beginningPoint.y == branchingPoints[i].y) {
+            foundOnList = true;
+            break;
+        }
+    }
+    return { "found": foundOnList, "indx": i };
+}
 
+var enpointPathIndx;
 function drawSaw() {
 
     n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
@@ -359,7 +371,9 @@ function drawSaw() {
         subpath.push(beginningPoint);
         subpath = subpath.concat(sites);
         paths.push(subpath);
-
+        if (onList(endPoint, subpath)) {
+            enpointPathIndx = paths.length - 1;
+        }
         allSites = allSites.concat(beginningPoint);
         allSites = allSites.concat(sites);
 
@@ -377,6 +391,26 @@ function drawSaw() {
     //console.log("pathslength " + paths.length);
 
     drawMaze();
+
+    /*
+    var returnPaths = []
+    var goalPath = paths[enpointPathIndx];
+    var returnIndex = enpointPathIndx;
+    var prevPathConnectionPoint= goalPath[0];
+    var returnIndxes = [];
+    while (returnIndex > 0) {
+
+        var retpathCandidate = paths[returnIndex];
+        returnIndex--;
+        var returnPoint = listIndex(prevPathConnectionPoint, retpathCandidate);
+        if (returnPoint.found) {
+            returnPaths.push(goalPath.slice(0, returnPoint.indx + 1));
+          prevPathConnectionPoint = retpathCandidate[0];
+        }
+
+    }
+    paths[enpointPathIndx][endpointListIndx]
+*/
 }
 
 
@@ -484,8 +518,10 @@ function run() {
     var timedelta = timer - prevTime;
     prevTime = timer;
     if (!boardActive) {
-        mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
-        mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+        // mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
+        //  mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+        mesh.rotation.z = -(mouseX / 50 % 50 * 0.012);
+        mesh.rotation.x = (mouseY / 50 % 50 * 0.012);
     } else {
         mesh.rotation.z += ($lastL * 2 - mesh.rotation.z) * 0.02;
         mesh.rotation.x -= ($lastR * 2 + mesh.rotation.x) * 0.02;
@@ -498,6 +534,7 @@ function run() {
     var neighbourGridPositions = possibleNewPoints(gridPos.x, gridPos.y, allFreePoints);
 
     var boundariesActive = { "right": true, "down": true, "left": true, "up": true };
+    var openCorners = [];
     var boundaries = { right: rightEdge, left: leftEdge, down: bottomEdge, up: topEdge };
     neighbourGridPositions.forEach(function (element) {
 
@@ -505,21 +542,33 @@ function run() {
 
         if (element.dir == "right" && passage) {
             boundariesActive.right = false;
+            // if (lineInBetween(gridPos, neighbourGridPositions[1])) {
+            //   openCorners.push({ indx: 0, inBetween: "right, down" });
+            //  }
         } else if (element.dir == "right" && !passage) {
             boundaries.right = (element.x) * gridDim - mazeSize * gridDim / 2;
         }
         if (element.dir == "down" && passage) {
             boundariesActive.down = false;
+            // if (lineInBetween(gridPos, neighbourGridPositions[2])) {
+            //    openCorners.push({ indx: 1, inBetween: "down, left" });
+            // }
         } else if (element.dir == "down" && !passage) {
             boundaries.down = - (element.y) * gridDim + mazeSize * gridDim / 2;
         }
         if (element.dir == "left" && passage) {
             boundariesActive.left = false;
+            // if (lineInBetween(gridPos, neighbourGridPositions[2])) {
+            //    openCorners.push({ indx: 2, inBetween: "left,up" });
+            // }
         } else if (element.dir == "left" && !passage) {
             boundaries.left = (element.x + 1) * gridDim - mazeSize * gridDim / 2;
         }
         if (element.dir == "up" && passage) {
             boundariesActive.up = false;
+            // if (lineInBetween(gridPos, neighbourGridPositions[3])) {
+            //    openCorners.push({ indx: 2, inBetween: "left,up" });
+            // }
         } else if (element.dir == "up" && !passage) {
             boundaries.up = - (element.y + 1) * gridDim + mazeSize * gridDim / 2;
         }
@@ -719,7 +768,7 @@ var socket = io.connect("/", {
 
 
 socket.on("message", function (data) {
-
+    //console.log(data);
     data = process_data(data);
 
     /* Initial position */
@@ -738,6 +787,13 @@ socket.on("message", function (data) {
 
 function process_data(data) {
 
+    if (data.indexOf("boardActive:") != -1){
+        console.log(data);
+        var boardActiveParamsArray = data.split(':');
+        if (boardActiveParamsArray[1] == '1'){
+            boardActive = true;
+        }
+    }
     var ret = {
         r: 0,
         l: 0
