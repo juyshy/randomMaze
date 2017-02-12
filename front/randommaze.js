@@ -536,14 +536,18 @@ $(function () {
     var flagSize = 50;
     flag = new THREE.Object3D();
     var geom = new THREE.PlaneGeometry(flagSize, flagSize * 3 / 5);
+    var geometry = new THREE.CylinderGeometry(gridDim / 8, gridDim / 8, height * 3 / 2 + flagSize, 3);
     var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
     var cylinder = new THREE.Mesh(geometry, material);
+    cylinder.position.y = (height * 3 / 2 + flagSize) / 2;
     var flagFlag = createMesh(geom, imageFile);
     flagFlag.position.y = height * 3;
     flagFlag.position.x = flagSize / 2;
     flag.add(flagFlag)
     flag.add(cylinder)
+    flag.position.x = (mazeSize * gridDim / 2) - gridDim / 2;
     flag.position.z = - (mazeSize * gridDim / 2) + gridDim / 2;
+
     var dirToFlag = new THREE.Vector3(0, 1, 0);
 
 
