@@ -17,8 +17,9 @@ var mazeSize = 20, gridDim = 20;
 var boardActive = false;
 var soundOn = false;
 var steppedMouse = true;
-var gridBoundariesBebugActive = true;
+var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
+var closeUpCamera = false;
 var ballSize = 5;
 var lookatVec = new THREE.Vector3(0, -10, 0);
 var endPoint = { x: mazeSize - 1, y: mazeSize - 1 };
@@ -87,8 +88,14 @@ function setUpRender() {
 
 function setCamera() {
     camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
-    camera.position.set(0, 30, 220);
-    camera.lookAt(lookatVec);
+    if (closeUpCamera) {
+        
+        camera.position.set(0, 30, 220);
+    } else {
+        camera.position.set(-7, 140, 80);
+        camera.lookAt(lookatVec);
+    }
+   
 }
 
 function letThereBeLight() {
@@ -710,18 +717,23 @@ function run() {
     ball.position.x += vx;
     ball.position.z += vz;
 
-    var ballWPos = ball.getWorldPosition();
-    lookatVec.x += (ballWPos.x - lookatVec.x) * 0.04;
-    lookatVec.z += (ballWPos.z - lookatVec.z) * 0.04;
+    if (closeUpCamera) {
+        var ballWPos = ball.getWorldPosition();
+        lookatVec.x += (ballWPos.x - lookatVec.x) * 0.04;
+        lookatVec.z += (ballWPos.z - lookatVec.z) * 0.04;
 
-    camera.lookAt(lookatVec);
+        camera.lookAt(lookatVec);
 
-    camera.position.set(lookatVec.x, 30, lookatVec.z + 5);
+        camera.position.set(lookatVec.x, 30, lookatVec.z + 5);
+    } else {
+        camera.position.set(-7, 140, 80);
+        camera.lookAt(new THREE.Vector3(0, -10, 0));
 
+    }
     var minumumSoundPause = 0.7;
     var sefvolume = 1;
     var angle = Math.atan2(vx, vz);
-    console.log(angle * (180 / Math.PI));
+    //console.log(angle * (180 / Math.PI));
 
     openCorners.forEach(function (element) {
         var xdist = element.cornerPoint.x - ball.position.x;
@@ -955,7 +967,7 @@ try {
 function process_data(data) {
 
     if (data.indexOf("boardActive:") != -1) {
-        console.log(data);
+       // console.log(data);
         var boardActiveParamsArray = data.split(':');
         if (boardActiveParamsArray[1] == '1' || boardActiveParamsArray[1] == 'true') {
             boardActive = true;

@@ -10,7 +10,7 @@ var ops = stdio.getopt({
 	'logging': { key: 'l', description: 'Activate logging' },
 });
 
-//console.dir(ops);
+console.dir(ops);
 if (ops.boardactive != undefined) {
 	$parameterData.boardActive = ops.boardactive ;
 }
