@@ -12,7 +12,7 @@ var ops = stdio.getopt({
 
 //console.dir(ops);
 if (ops.boardactive != undefined) {
-	$parameterData .boardActive = ops.boardactive ;
+	$parameterData.boardActive = ops.boardactive ;
 }
 if (ops.logging != undefined) {
 	$parameterData.logging = ops.logging ;

@@ -16,6 +16,7 @@ seeking random empty points, beside the  path
 var mazeSize = 20, gridDim = 20;
 var boardActive = false;
 var soundOn = false;
+var steppedMouse = false;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
 var ballSize = 5;
@@ -58,6 +59,21 @@ var lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown;
 var hit;
 var $lastR = 0;
 var $lastL = 0;
+
+
+
+function initStats() {
+
+    var stats = new Stats();
+    stats.setMode(0); // 0: fps, 1: ms
+    // Align top-left
+    stats.domElement.style.position = "absolute";
+    stats.domElement.style.left = "0px";
+    stats.domElement.style.top = "0px";
+    document.getElementById("Stats-output").appendChild(stats.domElement);
+
+    return stats;
+}
 
 function setUpRender() {
     var container = document.getElementById("container");
@@ -462,16 +478,24 @@ function setup() {
     //Initialize sounds here
     hit = sounds["sound///hit.wav"];
 }
+function initSound() {
+    //    snd = new Audio("sound///hit.wav"); // buffers automatically when created
+    try {
+        sounds.load([
+            "sound///hit.wav",/* 
+        "sounds/music.wav",
+        "sounds/bounce.mp3"*/
+        ]);
+        sounds.whenLoaded = setup;
+    } catch (err) {
+        console.log(err);
+    }
+}
 $(function () {
 
-    //    snd = new Audio("sound///hit.wav"); // buffers automatically when created
-    sounds.load([
-        "sound///hit.wav",/* 
-  "sounds/music.wav",
-  "sounds/bounce.mp3"*/
-    ]);
-    sounds.whenLoaded = setup;
 
+    initSound();
+    initStats();
     setUpRender();
     setCamera();
     letThereBeLight();
@@ -518,10 +542,13 @@ function run() {
     var timedelta = timer - prevTime;
     prevTime = timer;
     if (!boardActive) {
-        // mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
-        //  mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
-        mesh.rotation.z = -(mouseX / 50 % 50 * 0.012);
-        mesh.rotation.x = (mouseY / 50 % 50 * 0.012);
+        if (steppedMouse) { // for debugging style 
+            mesh.rotation.z = -(mouseX / 50 % 50 * 0.012);
+            mesh.rotation.x = (mouseY / 50 % 50 * 0.012);
+        } else {
+            mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
+            mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+        }
     } else {
         mesh.rotation.z += ($lastL * 2 - mesh.rotation.z) * 0.02;
         mesh.rotation.x -= ($lastR * 2 + mesh.rotation.x) * 0.02;
@@ -533,11 +560,13 @@ function run() {
     //ball.position.z = (mazeSize * gridDim / 2) - gridDim / 2;
     var neighbourGridPositions = possibleNewPoints(gridPos.x, gridPos.y, allFreePoints);
 
+
     var boundariesActive = { "right": true, "down": true, "left": true, "up": true };
     var openCorners = [];
     var boundaries = { right: rightEdge, left: leftEdge, down: bottomEdge, up: topEdge };
-    neighbourGridPositions.forEach(function (element) {
-
+    for (var posIndx = 0; posIndx < neighbourGridPositions.length; posIndx++) {
+        //    neighbourGridPositions.forEach(function (element) {
+        element = neighbourGridPositions[posIndx];
         var passage = lineInBetween(gridPos, element);
 
         if (element.dir == "right" && passage) {
@@ -576,7 +605,7 @@ function run() {
          boundaries.down = - (element.y) * gridDim + mazeSize * gridDim / 2;
          boundaries.left = (element.x + 1) * gridDim - mazeSize * gridDim / 2;
          boundaries.up = - (element.y + 1) * gridDim + mazeSize * gridDim / 2;*/
-    });
+    }//);
 
 
     if (gridBoundariesBebugActive) {
@@ -758,40 +787,49 @@ function onMouseUp(event) {
 }
 
 
+try {
+    var socket = io.connect("/", {
+        "reconnect": true,
+        "reconnection delay": 500,
+        "max reconnection attempts": 10
+    });
+} catch (err) {
+    console.log(err);
 
-var socket = io.connect("/", {
-    "reconnect": true,
-    "reconnection delay": 500,
-    "max reconnection attempts": 10
-});
+}
 
+try {
 
+    socket.on("message", function (data) {
+        //console.log(data);
+        data = process_data(data);
 
-socket.on("message", function (data) {
-    //console.log(data);
-    data = process_data(data);
+        /* Initial position */
+        if ($lastR == -1) {
+            $lastR = data.x;
+            $lastL = data.y;
+        }
 
-    /* Initial position */
-    if ($lastR == -1) {
-        $lastR = data.x;
-        $lastL = data.y;
-    }
+        $lastR = data.r;
+        //console.log($lastR);
+        $lastL = data.l;
+        //renderScene();
 
-    $lastR = data.r;
-    //console.log($lastR);
-    $lastL = data.l;
-    //renderScene();
+    });
+} catch (err) {
+    console.log(err);
 
-});
-
+}
 
 function process_data(data) {
 
-    if (data.indexOf("boardActive:") != -1){
+    if (data.indexOf("boardActive:") != -1) {
         console.log(data);
         var boardActiveParamsArray = data.split(':');
-        if (boardActiveParamsArray[1] == '1'){
+        if (boardActiveParamsArray[1] == '1' || boardActiveParamsArray[1] == 'true') {
             boardActive = true;
+        } else {
+            boardActive = false;
         }
     }
     var ret = {
