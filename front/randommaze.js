@@ -14,13 +14,15 @@ seeking random empty points, beside the  path
 /* eslint-disable   no-console */
 
 var mazeSize = 20, gridDim = 20;
-var boardActive = false;
-var soundOn = false;
-var steppedMouse = true;
+var steppedMouse = false;
+var pathVisible = false;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
 var closeUpCamera = false;
 var ballSize = 5;
+
+var soundOn = false;
+var boardActive = false;
 var lookatVec = new THREE.Vector3(0, -10, 0);
 var endPoint = { x: mazeSize - 1, y: mazeSize - 1 };
 var startX = 0,
@@ -61,8 +63,8 @@ var lineEdgeL, lineEdgeR, lineEdgeTop, lineEdgeDown, obj3d, obj3ds;
 var hit;
 var $lastR = 0;
 var $lastL = 0;
-
-
+var returnPath = [];
+var enpointPathIndx;
 
 function initStats() {
 
@@ -357,7 +359,66 @@ function listIndex(beginningPoint, branchingPoints) {
     return { "found": foundOnList, "indx": i };
 }
 
-var enpointPathIndx;
+
+function createMazePath() {
+
+    var returnPaths = []
+    var goalPath = paths[enpointPathIndx];
+    var returnIndex = enpointPathIndx;
+    var endPointPathIndx = listIndex(endPoint, goalPath);
+    returnPaths.push(goalPath.slice(0, endPointPathIndx.indx + 1));
+    var prevPathConnectionPoint = goalPath[0];
+    var returnpathIndx;
+    while (enpointPathIndx > 0) {
+        for (var indx = enpointPathIndx - 1; indx >= 0; indx--) {
+            returnpathIndx = listIndex(prevPathConnectionPoint, paths[indx]);
+            if (returnpathIndx.found) {
+                goalPath = paths[indx];
+                returnPaths.push(goalPath.slice(0, returnpathIndx.indx));
+                prevPathConnectionPoint = goalPath[0];
+                enpointPathIndx = indx;
+                break;
+                //console.dir(returnpathIndx);
+            }
+        }
+    }
+
+    returnPaths.reverse();
+    returnPaths.forEach(function (subpath) {
+        subpath.forEach(function (pointInPath) {
+            returnPath.push(pointInPath);
+        })
+    })
+
+    if (pathVisible) {
+        drawmazePath();
+    }
+}
+function drawmazePath() {
+    // returnPath.forEach(function (element) {
+    var line_material3 = new THREE.LineBasicMaterial({ color: 0x50F626 });
+
+    for (var i = 0; i < returnPath.length - 1; i++) {
+        /*  var geometry = new THREE.CylinderGeometry(gridDim/5, gridDim/5, gridDim , 3);
+          var material = new THREE.MeshBasicMaterial({ color: 0x22ff44 });
+          var cylinder = new THREE.Mesh(geometry, material);
+        */
+        var line_geometry = new THREE.Geometry();
+
+        var xPos = returnPath[i].x * gridDim - mazeSize * gridDim / 2 + gridDim / 2;
+        var zPos = - (returnPath[i].y) * gridDim + mazeSize * gridDim / 2 - gridDim / 2;
+        var xPos2 = returnPath[i + 1].x * gridDim - mazeSize * gridDim / 2 + gridDim / 2;
+        var zPos2 = - (returnPath[i + 1].y) * gridDim + mazeSize * gridDim / 2 - gridDim / 2;
+
+        line_geometry.vertices.push(new THREE.Vector3(xPos, 0, zPos));
+        line_geometry.vertices.push(new THREE.Vector3(xPos2, 0, zPos2));
+
+
+        var lineDir = new THREE.LineSegments(line_geometry, line_material3);
+        mesh.add(lineDir);
+
+    }
+}
 function drawSaw() {
 
     n_steps = (mazeSize + 1) * (mazeSize + 1) - 10;
@@ -414,37 +475,21 @@ function drawSaw() {
 
     //console.log("pathslength " + paths.length);
 
-    drawMaze();
 
-    /*
-    var returnPaths = []
-    var goalPath = paths[enpointPathIndx];
-    var returnIndex = enpointPathIndx;
-    var prevPathConnectionPoint= goalPath[0];
-    var returnIndxes = [];
-    while (returnIndex > 0) {
-
-        var retpathCandidate = paths[returnIndex];
-        returnIndex--;
-        var returnPoint = listIndex(prevPathConnectionPoint, retpathCandidate);
-        if (returnPoint.found) {
-            returnPaths.push(goalPath.slice(0, returnPoint.indx + 1));
-          prevPathConnectionPoint = retpathCandidate[0];
-        }
-
-    }
-    paths[enpointPathIndx][endpointListIndx]
-*/
 }
-
-
-function initMaze() {
-    drawSaw();
+function positionBall() {
     ball = Ball(ballSize);
     ball.position.y = 5;
     ball.position.x = - (mazeSize * gridDim / 2) + gridDim / 2;
     ball.position.z = (mazeSize * gridDim / 2) - gridDim / 2;
     mesh.add(ball);
+}
+
+function initMaze() {
+    drawSaw();
+    drawMaze();
+    positionBall();
+
 }
 function onDocumentMouseMove(event) {
     mouseX = (event.clientX - windowHalfX);
@@ -531,6 +576,7 @@ $(function () {
     allFreePoints = freeInTheBeginning();
     initMaze();
 
+    createMazePath()
 
     var imageFile = "checkered.jpg";
     var flagSize = 50;
