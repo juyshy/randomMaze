@@ -353,7 +353,12 @@ function listIndex(beginningPoint, branchingPoints) {
 
 
 var branchingPaths = [];
-function createMazePath() {
+var returnPathLength;
+var numOfPotentialDeviations;
+var dirs = [];
+var dirsStats ;
+var numOfTurns = 0;
+function analyzeMaze() {
 
     var returnPaths = []
     var goalPath = paths[enpointPathIndx];
@@ -366,7 +371,7 @@ function createMazePath() {
 
     while (enpointPathIndx > 0) {
         for (var indx = enpointPathIndx - 1; indx >= 0; indx--) {
-            returnpathIndx = listIndex(prevPathConnectionPoint, paths[indx]);
+            //returnpathIndx = listIndex(prevPathConnectionPoint, paths[indx]);
             var inlistIndx = paths[indx].indexOf(prevPathConnectionPoint);
             if (inlistIndx != -1) {
                 goalPath = paths[indx];
@@ -389,21 +394,53 @@ function createMazePath() {
             returnPath.push(pointInPath);
         });
     });
+
+ 
     var potentialAdditionalBranches = [];
     for (var i = 0; i < paths.length; i++) {
         if (collectedIndexes.indexOf(i) == -1) {
             potentialAdditionalBranches.push(paths[i])
         }
     }
-
+    returnPathLength = returnPath.length;
     returnPath.forEach(function (pointInPath) {
         potentialAdditionalBranches.forEach(function (potentialBranch) {
-            if (potentialBranch.indexOf(pointInPath) != -1) {
+            if (potentialBranch[0] == pointInPath) {
                 branchingPaths.push(potentialBranch);
+
             }
-        })
+        });
     });
-    console.dir
+    numOfPotentialDeviations = branchingPaths.length;
+    console.log(returnPathLength, numOfPotentialDeviations);
+    dirsStats = { "right": 0, "left": 0, "up": 0, "down": 0 };
+
+    for (var i = 0; i < returnPath.length - 1; i++) {
+
+        var xdir = returnPath[i + 1].x - returnPath[i].x;
+        var ydir = returnPath[i + 1].y - returnPath[i].y;
+        var dir; // going right
+        if (xdir < 0) {
+            dir = 2; // going left
+            dirsStats.left += 1;
+        } else if (ydir > 0) {
+            dir = 1; // going down
+            dirsStats.down += 1;
+        } else if (ydir < 0) {
+            dir = 3; // going up
+            dirsStats.up += 1;
+        } else {
+            dir = 0; // going right
+            dirsStats.right += 1;
+        }
+        if (i > 0) {
+            if (dirs[dirs.length - 1] != dir) {
+                numOfTurns += 1;
+            }
+        }
+        dirs.push(dir);
+    }
+
     if (pathVisible) {
         drawmazePath();
     }
@@ -586,7 +623,7 @@ $(function () {
     allFreePoints = freeInTheBeginning();
     initMaze();
 
-    createMazePath()
+    analyzeMaze()
 
     var imageFile = "checkered.jpg";
     var flagSize = 50;
@@ -605,8 +642,6 @@ $(function () {
     flag.position.z = - (mazeSize * gridDim / 2) + gridDim / 2;
 
     var dirToFlag = new THREE.Vector3(0, 1, 0);
-
-
 
     mesh.add(flag);
 
@@ -653,8 +688,8 @@ function run() {
             mesh.rotation.z = -(mouseX / 50 % 50 * 0.012);
             mesh.rotation.x = (mouseY / 50 % 50 * 0.012);
         } else {
-            mesh.rotation.z -= (mouseX * 0.0006 + mesh.rotation.z) * 0.06;
-            mesh.rotation.x += (mouseY * 0.0010 - mesh.rotation.x) * 0.06;
+            mesh.rotation.z -= (mouseX * 0.0010 + mesh.rotation.z) * 0.06;
+            mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.06;
         }
     } else {
         mesh.rotation.z += ($lastL * 2 - mesh.rotation.z) * 0.02;
