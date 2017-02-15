@@ -1,10 +1,16 @@
 Random maze Balance Board Game
 ======
 
+1) attach accelometer to balance Board
+2) wire it to arduino 
+3) upload arduino (MPU6050_DMP6.ino)
+4) npm install
+5) launch node balanceBoardServer.js
+6) play the maze game!
 
-node balanceBoardServer.js
+optionally works also with mouse
 
-applying Self-Avoiding Walk to generate random maze with html5 canvas and WebGL
+randome maze generation applying Self-Avoiding Walk  with html5 canvas and WebGL
 
 live:
 [http://juy.fi/3d/randomMaze/] (http://juy.fi/3d/randomMaze/)
