@@ -1,12 +1,9 @@
 
 /*
-  
 applying algorithms from here
 http://www.physics.buffalo.edu/phy411-506/topic3/topic3-lec1.pdf
 http://www.physics.buffalo.edu/phy411-506/topic3/sawalk.cpp
- 
 seeking random empty points, beside the  path
- 
 */
 
 /*jslint browser: true*/
@@ -15,7 +12,7 @@ seeking random empty points, beside the  path
 
 var mazeSize = 20, gridDim = 20;
 var steppedMouse = false;
-var pathVisible = false;
+var pathVisible = true;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
 var closeUpCamera = false;
@@ -65,10 +62,12 @@ var $lastR = 0;
 var $lastL = 0;
 var returnPath = [];
 var enpointPathIndx;
-
+var flag;
+var hitSec = 0;
+var stats;
 function initStats() {
 
-    var stats = new Stats();
+    stats = new Stats();
     stats.setMode(0); // 0: fps, 1: ms
     // Align top-left
     stats.domElement.style.position = "absolute";
@@ -107,9 +106,7 @@ function letThereBeLight() {
     scene.add(new THREE.AmbientLight(0xffffff));
 }
 
-
 for (var prop in ColorKeywords) {
-
     colors.push(ColorKeywords[prop]);
 }
 
@@ -164,7 +161,6 @@ function possibleNewPoints(x, y, freePoints) {
 
 function lineInBetween(point1, point2) {
 
-
     /* 	var pointtiedot= haeSubPath(point1); */
     for (var j = 0; j < paths.length; j++) {
         var subpath = paths[j];
@@ -173,12 +169,10 @@ function lineInBetween(point1, point2) {
             if (i < subpath.length - 1 && (point1.x == subpath[i].x && point1.y == subpath[i].y) && (point2.x == subpath[i + 1].x && point2.y == subpath[i + 1].y)) {
                 foundPoints += 1;
                 return true;
-
             }
             if (i > 0 && (point1.x == subpath[i].x && point1.y == subpath[i].y) && (point2.x == subpath[i - 1].x && point2.y == subpath[i - 1].y)) {
                 foundPoints += 1;
                 return true;
-
             }
         }
         //console.log("foundPoints " + foundPoints);
@@ -193,9 +187,7 @@ function lineInBetween(point1, point2) {
 
 function drawMaze() {
 
-
     //var offset = gridDim / 2;
-
     //this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
     this.material = new THREE.MeshPhongMaterial({ color: 0xaa0fff, specular: 0xaaaacc, side: THREE.DoubleSide });   // , ambient : 0x9999ff
 
@@ -360,6 +352,7 @@ function listIndex(beginningPoint, branchingPoints) {
 }
 
 
+var branchingPaths = [];
 function createMazePath() {
 
     var returnPaths = []
@@ -369,12 +362,19 @@ function createMazePath() {
     returnPaths.push(goalPath.slice(0, endPointPathIndx.indx + 1));
     var prevPathConnectionPoint = goalPath[0];
     var returnpathIndx;
+    var collectedIndexes = [];
+
     while (enpointPathIndx > 0) {
         for (var indx = enpointPathIndx - 1; indx >= 0; indx--) {
             returnpathIndx = listIndex(prevPathConnectionPoint, paths[indx]);
-            if (returnpathIndx.found) {
+            var inlistIndx = paths[indx].indexOf(prevPathConnectionPoint);
+            if (inlistIndx != -1) {
                 goalPath = paths[indx];
-                returnPaths.push(goalPath.slice(0, returnpathIndx.indx));
+                collectedIndexes.push(indx);
+                if (inlistIndx < goalPath.length - 1) {
+                    branchingPaths.push(goalPath.slice(inlistIndx));
+                }
+                returnPaths.push(goalPath.slice(0, inlistIndx));
                 prevPathConnectionPoint = goalPath[0];
                 enpointPathIndx = indx;
                 break;
@@ -387,22 +387,33 @@ function createMazePath() {
     returnPaths.forEach(function (subpath) {
         subpath.forEach(function (pointInPath) {
             returnPath.push(pointInPath);
-        })
-    })
+        });
+    });
+    var potentialAdditionalBranches = [];
+    for (var i = 0; i < paths.length; i++) {
+        if (collectedIndexes.indexOf(i) == -1) {
+            potentialAdditionalBranches.push(paths[i])
+        }
+    }
 
+    returnPath.forEach(function (pointInPath) {
+        potentialAdditionalBranches.forEach(function (potentialBranch) {
+            if (potentialBranch.indexOf(pointInPath) != -1) {
+                branchingPaths.push(potentialBranch);
+            }
+        })
+    });
+    console.dir
     if (pathVisible) {
         drawmazePath();
     }
 }
 function drawmazePath() {
-    // returnPath.forEach(function (element) {
+
     var line_material3 = new THREE.LineBasicMaterial({ color: 0x50F626 });
 
     for (var i = 0; i < returnPath.length - 1; i++) {
-        /*  var geometry = new THREE.CylinderGeometry(gridDim/5, gridDim/5, gridDim , 3);
-          var material = new THREE.MeshBasicMaterial({ color: 0x22ff44 });
-          var cylinder = new THREE.Mesh(geometry, material);
-        */
+
         var line_geometry = new THREE.Geometry();
 
         var xPos = returnPath[i].x * gridDim - mazeSize * gridDim / 2 + gridDim / 2;
@@ -412,7 +423,6 @@ function drawmazePath() {
 
         line_geometry.vertices.push(new THREE.Vector3(xPos, 0, zPos));
         line_geometry.vertices.push(new THREE.Vector3(xPos2, 0, zPos2));
-
 
         var lineDir = new THREE.LineSegments(line_geometry, line_material3);
         mesh.add(lineDir);
@@ -565,7 +575,7 @@ function createMesh(geom, imageFile) {
     return mesh;
 }
 
-var flag;
+
 $(function () {
 
     initSound();
@@ -632,7 +642,6 @@ function shootSound(vol, freq) {
     );
 }
 
-var hitSec = 0;
 function run() {
     // Render the scene
     var timer = 0.001 * Date.now();
@@ -644,8 +653,8 @@ function run() {
             mesh.rotation.z = -(mouseX / 50 % 50 * 0.012);
             mesh.rotation.x = (mouseY / 50 % 50 * 0.012);
         } else {
-            mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.02;
-            mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.02;
+            mesh.rotation.z -= (mouseX * 0.0006 + mesh.rotation.z) * 0.06;
+            mesh.rotation.x += (mouseY * 0.0010 - mesh.rotation.x) * 0.06;
         }
     } else {
         mesh.rotation.z += ($lastL * 2 - mesh.rotation.z) * 0.02;
@@ -990,6 +999,8 @@ function run() {
         } */
 
     renderer.render(scene, camera);
+    stats.update();
+
 
     // Ask for another frame
     requestAnimationFrame(run);
