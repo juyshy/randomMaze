@@ -70,7 +70,7 @@ var branchingPaths = [];
 var returnPathLength;
 var numOfPotentialDeviations;
 var dirs = [];
-var dirsStats ;
+var dirsStats;
 var numOfTurns = 0;
 
 
@@ -198,7 +198,10 @@ function drawMaze() {
 
     //var offset = gridDim / 2;
     //this.material = new THREE.LineBasicMaterial({ color: 0xff0fff });
-    this.material = new THREE.MeshPhongMaterial({ color: 0xaa0fff, specular: 0xaaaacc, side: THREE.DoubleSide });   // , ambient : 0x9999ff
+    this.material = new THREE.MeshPhongMaterial({
+        color: 0xaa0fff,
+        specular: 0xaaaacc, side: THREE.DoubleSide
+    });   // , ambient : 0x9999ff
 
     this.geometry = new THREE.Geometry();
 
@@ -232,7 +235,9 @@ function drawMaze() {
     geometry.faces.push(new THREE.Face3(12 + 1, 12 + 2, 12 + 3));
 
     var segments = 0;
-
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    var geometryc = new THREE.CylinderGeometry(2, 2, gridDim, 3);
+    var materialc = new THREE.MeshPhongMaterial({ color: 0xaa2fcf });
     for (var row = 0; row < mazeSize - 1; row++) {
         for (var i = 0; i < mazeSize; i++) {
 
@@ -249,6 +254,16 @@ function drawMaze() {
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 0, segments * 4 + 12 + 1, segments * 4 + 12 + 2));
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 1, segments * 4 + 12 + 2, segments * 4 + 12 + 3));
 
+                var pivot = new THREE.Object3D();
+                var cylinder = new THREE.Mesh(geometryc, materialc);
+                pivot.position.x = i * gridDim - mazeSize * gridDim / 2 + gridDim / 2;
+                pivot.position.z = - (row + 1) * gridDim + mazeSize * gridDim / 2;
+                //    gridPosBoundaries.up = - (gridPos.y) * gridDim + mazeSize * gridDim / 2;
+                cylinder.rotation.y = - Math.PI / 6;
+                pivot.add(cylinder);
+                pivot.rotation.z = - Math.PI / 2;
+                pivot.rotation.x = Math.PI;
+                this.mesh.add(pivot);
             }
 
             point1 = { x: row, y: i };
@@ -264,6 +279,14 @@ function drawMaze() {
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 0, segments * 4 + 12 + 1, segments * 4 + 12 + 2));
                 geometry.faces.push(new THREE.Face3(segments * 4 + 12 + 1, segments * 4 + 12 + 2, segments * 4 + 12 + 3));
 
+                var pivot = new THREE.Object3D();
+                var cylinder = new THREE.Mesh(geometryc, materialc);
+                pivot.position.x = (row + 1) * gridDim - mazeSize * gridDim / 2;
+                pivot.position.z = - i * gridDim + mazeSize * gridDim / 2 - gridDim / 2;
+                cylinder.rotation.y = - Math.PI / 6;
+                pivot.add(cylinder);
+                pivot.rotation.x = Math.PI / 2;
+                this.mesh.add(pivot);
             }
         }
     }
@@ -274,7 +297,7 @@ function drawMaze() {
     this.geometry.computeBoundingSphere();
     this.geometry.computeFaceNormals();
 
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
+
 
     scene.add(this.mesh);
     /* 		this.mesh.position.x = -30;*/
@@ -373,7 +396,7 @@ function analyzeMaze() {
     var prevPathConnectionPoint = goalPath[0];
     var returnpathIndx;
     var collectedIndexes = [];
-    
+
     while (enpointPathIndx > 0) {
         for (var indx = enpointPathIndx - 1; indx >= 0; indx--) {
             //returnpathIndx = listIndex(prevPathConnectionPoint, paths[indx]);
