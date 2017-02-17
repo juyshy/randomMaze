@@ -12,7 +12,7 @@ seeking random empty points, beside the  path
 
 var mazeSize = 20, gridDim = 20;
 var steppedMouse = false;
-var pathVisible = true;
+var pathVisible = false;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
 var closeUpCamera = false;
@@ -65,6 +65,15 @@ var enpointPathIndx;
 var flag;
 var hitSec = 0;
 var stats;
+
+var branchingPaths = [];
+var returnPathLength;
+var numOfPotentialDeviations;
+var dirs = [];
+var dirsStats ;
+var numOfTurns = 0;
+
+
 function initStats() {
 
     stats = new Stats();
@@ -352,12 +361,8 @@ function listIndex(beginningPoint, branchingPoints) {
 }
 
 
-var branchingPaths = [];
-var returnPathLength;
-var numOfPotentialDeviations;
-var dirs = [];
-var dirsStats ;
-var numOfTurns = 0;
+var journeyLength;
+
 function analyzeMaze() {
 
     var returnPaths = []
@@ -368,7 +373,7 @@ function analyzeMaze() {
     var prevPathConnectionPoint = goalPath[0];
     var returnpathIndx;
     var collectedIndexes = [];
-
+    
     while (enpointPathIndx > 0) {
         for (var indx = enpointPathIndx - 1; indx >= 0; indx--) {
             //returnpathIndx = listIndex(prevPathConnectionPoint, paths[indx]);
@@ -395,7 +400,6 @@ function analyzeMaze() {
         });
     });
 
- 
     var potentialAdditionalBranches = [];
     for (var i = 0; i < paths.length; i++) {
         if (collectedIndexes.indexOf(i) == -1) {
@@ -441,6 +445,7 @@ function analyzeMaze() {
         dirs.push(dir);
     }
 
+    journeyLength = returnPathLength * gridDim;
     if (pathVisible) {
         drawmazePath();
     }

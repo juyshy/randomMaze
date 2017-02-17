@@ -4,7 +4,10 @@ var SerialPort = serial.SerialPort;
 
 // Replace with the device name in your machine.
 var portName = "COM3"; // /dev/cu.usbmodem1421
-
+var sp = new SerialPort(portName, {
+	baudrate: 115200,
+	parser: serial.parsers.readline("\n")
+});
 var serialMessaegeCounter = 0;
 
 var scriptStartTime = Date.now();
@@ -20,10 +23,7 @@ module.exports = {
 		to the browser via this socket */
 		var log2file = params.logging;
 		if (params.boardActive) {
-			var sp = new SerialPort(portName, {
-				baudrate: 115200,
-				parser: serial.parsers.readline("\n")
-			});
+
 			sp.on("data", function (data) {
 				var nowtime = Date.now();
 
@@ -47,7 +47,7 @@ module.exports = {
 				socket.emit("message", data.toString());
 
 
-			}); 
+			});
 		}
 
 	}
