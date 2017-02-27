@@ -13,7 +13,7 @@ optionally works also with mouse
 randome maze generation applying Self-Avoiding Walk  with html5 canvas and WebGL
 
 live:
-[http://juy.fi/3d/randomMaze/] (http://juy.fi/3d/randomMaze/)
+[http://juy.fi/3d/maze/front/] (http://juy.fi/3d/maze/front/)
 
 youtube:
 [https://www.youtube.com/watch?v=aeccc8j8KUQ](https://www.youtube.com/watch?v=aeccc8j8KUQ)
