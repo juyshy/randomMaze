@@ -15,13 +15,14 @@ var steppedMouse = false;
 var pathVisible = false;
 var gridBoundariesBebugActive = false;
 var debuggingAcive = false;
-var closeUpCamera = false;
+var closeUpCamera = true;
 var ballSize = 5;
 
 var soundOn = false;
 var boardActive = false;
 var lookatVec = new THREE.Vector3(0, -10, 0);
 var endPoint = { x: mazeSize - 1, y: mazeSize - 1 };
+var endPointLoc;
 var startX = 0,
     startY = 0,
     s = {},
@@ -72,7 +73,7 @@ var numOfPotentialDeviations;
 var dirs = [];
 var dirsStats;
 var numOfTurns = 0;
-
+var timerView;
 
 function initStats() {
 
@@ -86,6 +87,19 @@ function initStats() {
 
     return stats;
 }
+function initTimerView() {
+
+    timerView = new TimerView();
+ 
+    timerView.domElement.style.position = "absolute";
+    timerView.domElement.style.left = "0px";
+    timerView.domElement.style.top = "100px";
+    document.getElementById("TimerView-output").appendChild(timerView.domElement);
+    timerView.begin();
+    return timerView;
+}
+
+
 
 function setUpRender() {
     var container = document.getElementById("container");
@@ -102,7 +116,7 @@ function setCamera() {
 
         camera.position.set(0, 30, 220);
     } else {
-        camera.position.set(-7, 140, 80);
+        camera.position.set(-7, 100, 10);
         camera.lookAt(lookatVec);
     }
 
@@ -640,19 +654,7 @@ function createMesh(geom, imageFile) {
     return mesh;
 }
 
-
-$(function () {
-
-    initSound();
-    initStats();
-    setUpRender();
-    setCamera();
-    letThereBeLight();
-    allFreePoints = freeInTheBeginning();
-    initMaze();
-
-    analyzeMaze()
-
+function drawGoalFlag() {
     var imageFile = "checkered.jpg";
     var flagSize = 50;
     flag = new THREE.Object3D();
@@ -672,6 +674,27 @@ $(function () {
     var dirToFlag = new THREE.Vector3(0, 1, 0);
 
     mesh.add(flag);
+}
+
+$(function () {
+
+    initSound();
+    initStats();
+    //initTimerView();
+    setUpRender();
+    setCamera();
+    letThereBeLight();
+    allFreePoints = freeInTheBeginning();
+    initMaze();
+
+    analyzeMaze()
+    drawGoalFlag();
+    endPointLoc = {};
+    //endPointLoc.x = (mazeSize - 1) * gridDim - mazeSize * gridDim / 2 + gridDim / 2;
+    //endPointLoc.y = - (mazeSize - 1 ) * gridDim + mazeSize * gridDim / 2;
+    endPointLoc = flag.getWorldPosition();
+
+
 
     if (gridBoundariesBebugActive) {
         gridBoundriesDebug();
@@ -716,12 +739,12 @@ function run() {
             mesh.rotation.z = -(mouseX / 50 % 50 * 0.012);
             mesh.rotation.x = (mouseY / 50 % 50 * 0.012);
         } else {
-            mesh.rotation.z -= (mouseX * 0.0010 + mesh.rotation.z) * 0.06;
-            mesh.rotation.x += (mouseY * 0.0012 - mesh.rotation.x) * 0.06;
+            mesh.rotation.z -= (mouseX * 0.0008 + mesh.rotation.z) * 0.06;
+            mesh.rotation.x += (mouseY * 0.0010 - mesh.rotation.x) * 0.06;
         }
     } else {
-        mesh.rotation.z += ($lastL * 2 - mesh.rotation.z) * 0.02;
-        mesh.rotation.x -= ($lastR * 2 + mesh.rotation.x) * 0.02;
+        mesh.rotation.z += ($lastL * 2.5 - mesh.rotation.z) * 0.03;
+        mesh.rotation.x -= ($lastR * 2.5 + mesh.rotation.x) * 0.03;
     }
     var secs = Math.round(timer);
     var gridPos = { x: 0, y: 0 };
@@ -866,20 +889,29 @@ function run() {
     vz *= friction;
     ball.position.x += vx;
     ball.position.z += vz;
-    flag.rotation.setFromRotationMatrix(camera.matrix);
+    
     if (closeUpCamera) {
         var ballWPos = ball.getWorldPosition();
         lookatVec.x += (ballWPos.x - lookatVec.x) * 0.04;
         lookatVec.z += (ballWPos.z - lookatVec.z) * 0.04;
 
-        camera.lookAt(lookatVec);
+        endPointLoc = flag.getWorldPosition();
+        var lookatVecCenter = new THREE.Vector3(0, 1, 0);
+        lookatVecCenter.subVectors(endPointLoc, lookatVec)
+        var lookatVecCenter1 = new THREE.Vector3(0, 1, 0);
+        lookatVecCenter1 = lookatVecCenter.divideScalar(4)
+        var lookatVecCenter2 = new THREE.Vector3(0, 1, 0);
+        lookatVecCenter2.addVectors(lookatVec, lookatVecCenter1)
 
-        camera.position.set(lookatVec.x, 30, lookatVec.z + 5);
+        camera.lookAt(lookatVecCenter2);
+        camera.position.set(lookatVecCenter2.x, 70, lookatVecCenter2.z + 5);
     } else {
-        camera.position.set(-7, 140, 80);
+        camera.position.set(0, 140, 20);
         camera.lookAt(new THREE.Vector3(0, -10, 0));
 
     }
+    flag.rotation.setFromRotationMatrix(camera.matrix);
+    
     var minumumSoundPause = 0.7;
     var sefvolume = 1;
     var angle = Math.atan2(vx, vz);
@@ -1063,6 +1095,7 @@ function run() {
 
     renderer.render(scene, camera);
     stats.update();
+    timerView.update();
 
 
     // Ask for another frame
@@ -1151,8 +1184,8 @@ function sanitize_size(values) {
         r: 0,
         l: 0
     };
-    var accelVal1Rest = 224;
-    var accelVal2Rest = 130;
+    var accelVal1Rest = 198;
+    var accelVal2Rest = 129;
 
 
     degreeR = ((values.r - accelVal1Rest) * 0.01);
