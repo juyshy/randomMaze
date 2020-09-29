@@ -1,4 +1,4 @@
-Random maze Balance Board Game
+Random maze Balance Board Game 3d WebGL
 ======
 
 1) attach accelometer to balance Board
